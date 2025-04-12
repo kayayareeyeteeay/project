@@ -28,6 +28,9 @@ const dbConfig = {
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'Pages'))); // Statikus fájlok
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+
 
 // 🔐 Auth middleware
 function authenticateToken(req, res, next) {
