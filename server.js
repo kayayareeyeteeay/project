@@ -176,9 +176,19 @@ async function loadGlobalSettings() {
     }
 }
 
-// Indítás
-loadGlobalSettings().then(() => {
+
+loadGlobalSettings()
+  .catch(err => {
+    console.error("⚠️ Globális beállítások betöltése sikertelen:", err.message);
+  })
+  .finally(() => {
     app.listen(PORT, () => {
-        console.log(`✅ Szerver fut: http://localhost:${PORT}`);
+      console.log(`✅ Szerver fut: http://localhost:${PORT}`);
     });
-});
+  });
+// Indítás
+//loadGlobalSettings().then(() => {
+//    app.listen(PORT, () => {
+//        console.log(`✅ Szerver fut: http://localhost:${PORT}`);
+//    });
+//});
