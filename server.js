@@ -28,6 +28,11 @@ const dbConfig = {
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'Pages'))); // Statikus fájlok
+// Statikus fájlok kiszolgálása
+app.use('/auth', express.static(path.join(__dirname, 'Pages', 'auth')));
+app.use('/common', express.static(path.join(__dirname, 'Pages', 'common')));
+app.use('/Crypto%20Oldalak', express.static(path.join(__dirname, 'Pages', 'Crypto Oldalak')));
+app.use('/Részvény%20Oldalak', express.static(path.join(__dirname, 'Pages', 'Részvény Oldalak')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 
