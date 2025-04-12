@@ -27,16 +27,8 @@ const dbConfig = {
 // Middleware
 app.use(cors());
 app.use(express.json());
-// ✅ Statikus mappák rootolása
-app.use(express.static(path.join(__dirname, 'Pages'))); // A Pages mappa lesz a "/" gyökér
-app.use('/css', express.static(path.join(__dirname, 'css')));
-app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use(express.static(path.join(__dirname, 'Pages')));
 
-// 💡 Mappák szóközös nevekkel
-app.use('/Crypto%20Oldalak', express.static(path.join(__dirname, 'Pages', 'Crypto Oldalak')));
-app.use('/Részvény%20Oldalak', express.static(path.join(__dirname, 'Pages', 'Részvény Oldalak')));
-
-// 
 
 // 🔐 Auth middleware
 function authenticateToken(req, res, next) {
