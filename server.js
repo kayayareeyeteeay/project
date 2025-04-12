@@ -22,7 +22,7 @@ const exec = require('child_process').exec;
 const axios = require('axios');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const SECRET_KEY = "fundelio_secret";
 
 const dbConfig = {
