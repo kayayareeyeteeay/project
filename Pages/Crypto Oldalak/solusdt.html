@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana - Fundelio</title>
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link id="theme-style" rel="stylesheet" href="/css/style-dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/light-dark.js"></script>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <script>
+    fetch("/Pages/common/navbar.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar-container").innerHTML = data;
+    });
+  </script>
+    
+
+    <div class="container mt-4">
+        <h2>Solana Kereskedés</h2>
+        <div class="row">
+            <div class="col-6">
+                <p>Rendelkezésre álló egyenleg: <span id="balance">10,000 USD</span></p>
+                <p id="solPrice">SOL: N/A</p>
+
+                <!-- Input a vásárolni kívánt SOL mennyiséghez -->
+                <div class="mb-3">
+                    <label for="solAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+                    <input type="number" class="form-control" id="solAmountInput" min="0" step="any" placeholder="SOL mennyiség" oninput="updateCost()">
+                </div>
+
+                <!-- Költség kiszámítása -->
+                <p id="totalCost">Költség: N/A</p>
+
+                <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
+                <button class="btn btn-danger" onclick="sellCrypto()">Eladás</button>
+                <button class="btn btn-secondary" onclick="resetCrypto()">Újraindítás</button>
+            </div>
+            <div class="col-6">
+                <canvas id="solChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let balance = 10000;  // Kezdő egyenleg USD-ben
+        let solAmount = 0;  // Vásárolt SOL mennyiség
+        let currentSolPrice = 0;  // A legfrissebb SOL ár
+
+        // Kriptopénz árfolyam lekérése
+        async function fetchCryptoPrice(symbol) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/live/${symbol}`);
+                const data = await response.json();
+                
+                if (data.price) {
+                    return parseFloat(data.price);
+                } else {
+                    console.error("⚠️ API hiba:", data);
+                    return null;
+                }
+            } catch (error) {
+                console.error("❌ API hiba:", error);
+                return null;
+            }
+        }
+
+        // Képzés egy valós idejű grafikon
+        let solChart;
+        let solPrices = [];
+        let labels = [];
+
+        async function updateChart() {
+            const price = await fetchCryptoPrice('solusdt');
+            if (price !== null) {
+                currentSolPrice = price;  // A legfrissebb ár frissítése
+                solPrices.push(price);
+                labels.push(new Date().toLocaleTimeString());
+
+                // Ha túl sok adat van, eltávolítjuk a legelsőt
+                if (solPrices.length > 10) {
+                    solPrices.shift();
+                    labels.shift();
+                }
+
+                // Frissíti a grafikonot
+                solChart.data.labels = labels;
+                solChart.data.datasets[0].data = solPrices;
+                solChart.update();
+                updateCost();  // Frissíti a költséget a legújabb árfolyammal
+            }
+        }
+
+        // Grafikon inicializálása
+        async function createChart() {
+            const ctx = document.getElementById('solChart').getContext('2d');
+            solChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'SOL árfolyam (USD)',
+                        data: solPrices,
+                        borderColor: 'rgb(75, 192, 192)',
+                        fill: false,
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+
+            // Frissítés minden 5 másodpercben
+            setInterval(updateChart, 5000);
+        }
+
+        // Vásárlás művelet
+        async function buyCrypto() {
+            const amountToBuy = parseFloat(document.getElementById('solAmountInput').value);
+            if (currentSolPrice !== 0 && balance >= currentSolPrice * amountToBuy && amountToBuy > 0) {
+                balance -= currentSolPrice * amountToBuy;
+                solAmount += amountToBuy;
+                updateBalance();
+            }
+        }
+
+        // Eladás művelet
+        async function sellCrypto() {
+            if (currentSolPrice !== 0 && solAmount > 0) {
+                const amountToSell = solAmount;
+                balance += currentSolPrice * amountToSell;
+                solAmount = 0;
+                updateBalance();
+            }
+        }
+
+        // Egyenleg frissítése
+        function updateBalance() {
+            document.getElementById('balance').innerText = `${balance.toFixed(2)} USD`;
+            document.getElementById('solPrice').innerText = `SOL: ${solAmount.toFixed(4)}`;
+        }
+
+        // Költség frissítése
+        function updateCost() {
+            const amount = parseFloat(document.getElementById('solAmountInput').value);
+            if (currentSolPrice !== 0 && amount > 0) {
+                const cost = currentSolPrice * amount;
+                document.getElementById('totalCost').innerText = `Költség: ${cost.toFixed(2)} USD`;
+            } else {
+                document.getElementById('totalCost').innerText = "Költség: N/A";
+            }
+        }
+
+        // Újraindítás
+        function resetCrypto() {
+            balance = 10000;  // Visszaállítás a kezdőegyenlegre
+            solAmount = 0;  // Törlés a vásárolt SOL mennyiségéből
+            updateBalance();
+        }
+
+        createChart();  // Grafikon inicializálása
+    </script>
+</body>
+
+</html>

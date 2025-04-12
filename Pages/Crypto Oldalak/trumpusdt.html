@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trumpcoin - Fundelio</title>
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link id="theme-style" rel="stylesheet" href="/css/style-dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/light-dark.js"></script>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <script>
+    fetch("/Pages/common/navbar.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar-container").innerHTML = data;
+    });
+  </script>
+    
+
+    <div class="container mt-4">
+        <h2>TRUMP Kereskedés</h2>
+        <div class="row">
+            <div class="col-6">
+                <p>Rendelkezésre álló egyenleg: <span id="balance">10,000 USD</span></p>
+                <p id="trumpPrice">TRUMP: N/A</p>
+
+                <!-- Input a vásárolni kívánt TRUMP mennyiséghez -->
+                <div class="mb-3">
+                    <label for="trumpAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+                    <input type="number" class="form-control" id="trumpAmountInput" min="0" step="any" placeholder="TRUMP mennyiség" oninput="updateCost()">
+                </div>
+
+                <!-- Költség kiszámítása -->
+                <p id="totalCost">Költség: N/A</p>
+
+                <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
+                <button class="btn btn-danger" onclick="sellCrypto()">Eladás</button>
+                <button class="btn btn-secondary" onclick="resetCrypto()">Újraindítás</button>
+            </div>
+            <div class="col-6">
+                <canvas id="trumpChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let balance = 10000;  // Kezdő egyenleg USD-ben
+        let trumpAmount = 0;  // Vásárolt TRUMP mennyiség
+        let currentTrumpPrice = 0;  // A legfrissebb TRUMP ár
+
+        // Kriptopénz árfolyam lekérése
+        async function fetchCryptoPrice(symbol) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/live/${symbol}`);
+                const data = await response.json();
+                
+                if (data.price) {
+                    return parseFloat(data.price);
+                } else {
+                    console.error("⚠️ API hiba:", data);
+                    return null;
+                }
+            } catch (error) {
+                console.error("❌ API hiba:", error);
+                return null;
+            }
+        }
+
+        // Képzés egy valós idejű grafikon
+        let trumpChart;
+        let trumpPrices = [];
+        let labels = [];
+
+        async function updateChart() {
+            const price = await fetchCryptoPrice('trumpusdt');
+            if (price !== null) {
+                currentTrumpPrice = price;  // A legfrissebb ár frissítése
+                trumpPrices.push(price);
+                labels.push(new Date().toLocaleTimeString());
+
+                // Ha túl sok adat van, eltávolítjuk a legelsőt
+                if (trumpPrices.length > 10) {
+                    trumpPrices.shift();
+                    labels.shift();
+                }
+
+                // Frissíti a grafikonot
+                trumpChart.data.labels = labels;
+                trumpChart.data.datasets[0].data = trumpPrices;
+                trumpChart.update();
+                updateCost();  // Frissíti a költséget a legújabb árfolyammal
+            }
+        }
+
+        // Grafikon inicializálása
+        async function createChart() {
+            const ctx = document.getElementById('trumpChart').getContext('2d');
+            trumpChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'TRUMP árfolyam (USD)',
+                        data: trumpPrices,
+                        borderColor: 'rgb(75, 192, 192)',
+                        fill: false,
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+
+            // Frissítés minden 5 másodpercben
+            setInterval(updateChart, 5000);
+        }
+
+        // Vásárlás művelet
+        async function buyCrypto() {
+            const amountToBuy = parseFloat(document.getElementById('trumpAmountInput').value);
+            if (currentTrumpPrice !== 0 && balance >= currentTrumpPrice * amountToBuy && amountToBuy > 0) {
+                balance -= currentTrumpPrice * amountToBuy;
+                trumpAmount += amountToBuy;
+                updateBalance();
+            }
+        }
+
+        // Eladás művelet
+        async function sellCrypto() {
+            if (currentTrumpPrice !== 0 && trumpAmount > 0) {
+                const amountToSell = trumpAmount;
+                balance += currentTrumpPrice * amountToSell;
+                trumpAmount = 0;
+                updateBalance();
+            }
+        }
+
+        // Egyenleg frissítése
+        function updateBalance() {
+            document.getElementById('balance').innerText = `${balance.toFixed(2)} USD`;
+            document.getElementById('trumpPrice').innerText = `TRUMP: ${trumpAmount.toFixed(4)}`;
+        }
+
+        // Költség frissítése
+        function updateCost() {
+            const amount = parseFloat(document.getElementById('trumpAmountInput').value);
+            if (currentTrumpPrice !== 0 && amount > 0) {
+                const cost = currentTrumpPrice * amount;
+                document.getElementById('totalCost').innerText = `Költség: ${cost.toFixed(2)} USD`;
+            } else {
+                document.getElementById('totalCost').innerText = "Költség: N/A";
+            }
+        }
+
+        // Újraindítás
+        function resetCrypto() {
+            balance = 10000;  // Visszaállítás a kezdőegyenlegre
+            trumpAmount = 0;  // Törlés a vásárolt TRUMP mennyiségéből
+            updateBalance();
+        }
+
+        createChart();  // Grafikon inicializálása
+    </script>
+</body>
+
+</html>
