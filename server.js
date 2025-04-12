@@ -145,6 +145,8 @@ app.get('/api/stocks', async (req, res) => {
         res.status(500).json({ message: "Hiba a részvényadatok lekérésekor!", error });
     }
 });
+app.use(express.static(path.join(__dirname, 'Pages')));
+
 
 // Globális beállítások betöltése az adatbázisból
 async function loadGlobalSettings() {
