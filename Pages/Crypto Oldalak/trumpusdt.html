@@ -58,7 +58,7 @@
         // Kriptopénz árfolyam lekérése
         async function fetchCryptoPrice(symbol) {
             try {
-                const response = await fetch(`http://localhost:3000/api/live/${symbol}`);
+                const response = await fetch(`/api/live/trumpusdt`);
                 const data = await response.json();
                 
                 if (data.price) {
