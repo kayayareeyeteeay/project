@@ -3,6 +3,7 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: #121212; /* bézs háttér */
     color: #ffffff;
+    margin: 0;
     padding: 0;
 }
 
@@ -10,7 +11,7 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: #121212;
     color: #ffffff;
-    margin: 0px 0px 0px 260px;
+    margin: 0px 0px 0px 255px;
     padding: 0;
 }
 
@@ -49,9 +50,9 @@ body {
 /* Sidebar */
 .sidebar-news {
     position: fixed;
-    top: 10px;
+    top: 15px;
     left: 10px;
-    height: 700px;
+    height: 925px;
     width: 250px;
     background-color: #1e1e1e;
     color: #fff;
