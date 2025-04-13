@@ -27,7 +27,11 @@ const dbConfig = {
 // Middleware
 app.use(cors());
 app.use(express.json());
+// Statikus fájlok kiszolgálása
 app.use(express.static(path.join(__dirname, 'Pages')));
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+
 
 
 // 🔐 Auth middleware
