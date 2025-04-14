@@ -9,39 +9,16 @@
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <!-- Navigációs menü -->
-    <div class="container-navbar">
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a href="../főoldal.html">Főoldal</a></li>
-          <li class="nav-item"><a href="../profil.html">Profil</a></li>
-          <li class="nav-item dropdown">
-            <a class="nav-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Eszközök</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="btcusdt.html">Bitcoin</a></li>
-              <li><a class="dropdown-item" href="ethusdt.html">Ethereum</a></li>
-              <li><a class="dropdown-item" href="dogeusdt.html">Dogecoin</a></li>
-              <li><a class="dropdown-item" href="xrpusdt.html">XRP</a></li>
-              <li><a class="dropdown-item" href="trumpusdt.html">Trumpcoin</a></li>
-              <li><a class="dropdown-item" href="solusdt.html">Solana</a></li>
-            </ul>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-item dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Részvények</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="spy.html">SPY</a></li>
-              <li><a class="dropdown-item" href="nvda.html">NVDA</a></li>
-              <li><a class="dropdown-item" href="msft.html">MSFT</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <div id="navbar-container"></div>
+  <script>
+    fetch("/common/navbar.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar-container").innerHTML = data;
+    });
+  </script>
+    
+
 
   <div class="container mt-4">
     <h2>SPY Kereskedés</h2>
