@@ -67,7 +67,10 @@ app.post('/api/register', async (req, res) => {
             .input('name', sql.NVarChar, name)
             .input('email', sql.NVarChar, email)
             .input('password', sql.NVarChar, hashedPassword)
-            .query(`INSERT INTO Felhasználó (Név, Email, Jelszó) VALUES (@name, @email, @password)`);
+            .input('balance', sql.Decimal, 10000)
+            .input('crypto', sql.NVarChar, JSON.stringify({ btcusdt: 0 }))
+            .query(`INSERT INTO Felhasználó (Név, Email, Jelszó, Egyenleg, KriptoMenynyiség)
+                    VALUES (@name, @email, @password, @balance, @crypto)`);
 
         res.status(201).json({ message: 'Sikeres regisztráció!' });
     } catch (err) {
