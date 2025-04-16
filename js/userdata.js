@@ -83,13 +83,42 @@ if (logoutBtn) {
 }
 
 // 📋 Profil betöltése
-document.addEventListener("DOMContentLoaded", () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) return;
+document.addEventListener("DOMContentLoaded", async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/auth/bejelentkezés.html';  // Ha nincs token, átirányít a bejelentkezés oldalra
+        return;
+    }
 
-    const userEmailEl = document.getElementById("userEmail");
-    if (userEmailEl) userEmailEl.innerText = user.email;
+    try {
+        // API hívás a backendhez, hogy lekérje a felhasználó adatait
+        const response = await fetch('https://project-production-feb3.up.railway.app/api/userdata', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
 
-    const userNameEl = document.getElementById("userName");
-    if (userNameEl) userNameEl.innerText = user.name;
+        if (!response.ok) {
+            throw new Error('Nem sikerült lekérni az adatokat.');
+        }
+
+        const data = await response.json();
+        // Az adatokat kiírjuk a megfelelő helyekre
+        document.getElementById('userEmail').innerText = data.email || 'Nincs adat';
+        document.getElementById('userName').innerText = data.name || 'Nincs adat';
+        document.getElementById('userBalance').innerText = data.balance || '0 USD';
+
+        // Részvények lista (ha van)
+        const stocks = data.stockQuantity || {};
+        const stocksList = document.getElementById('userStocks');
+        stocksList.innerHTML = '';
+        for (const stock in stocks) {
+            const li = document.createElement('li');
+            li.textContent = `${stock}: ${stocks[stock]}`;
+            stocksList.appendChild(li);
+        }
+
+    } catch (err) {
+        console.error('Hiba történt a profil betöltésekor:', err);
+    }
 });
