@@ -1,4 +1,4 @@
-// 📁 server.js (Átalakítva: Azure SQL + per-user egyenlegkezelés)
+// 📁 server.js (Azure SQL + per-user egyenlegkezelés + fix kezdőoldal route)
 
 const express = require('express');
 const WebSocket = require('ws');
@@ -33,6 +33,10 @@ app.use(express.static(path.join(__dirname, 'Pages')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Pages', 'auth', 'bejelentkezés.html'));
+});
+
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -47,6 +51,9 @@ function authenticateToken(req, res, next) {
 
 app.post('/api/register', async (req, res) => {
     const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: 'Hiányzó mezők!' });
+    }
     try {
         const pool = await sql.connect(dbConfig);
         const check = await pool.request()
@@ -183,7 +190,6 @@ app.get('/api/stocks', async (req, res) => {
         res.status(500).json({ message: "Hiba a részvényadatok lekérésekor!", error });
     }
 });
-
 
 app.listen(PORT, () => {
     console.log(`✅ Szerver fut: http://localhost:${PORT}`);
