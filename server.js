@@ -184,9 +184,6 @@ app.get('/api/stocks', async (req, res) => {
     }
 });
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Pages', 'auth', 'bejelentkezés.html'));
-});
 
 app.listen(PORT, () => {
     console.log(`✅ Szerver fut: http://localhost:${PORT}`);
