@@ -10,7 +10,7 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: #b2b6a1c2; /* zöldes háttér */
     color: #111;
-    margin: 0px 0px 0px 260px;
+    margin: 0px 0px 0px 255px;
     padding: 0;
 }
 
@@ -44,28 +44,27 @@ body {
     padding: 20px;
     background-color: #e0dacd;
     border-radius: 20px;
-    box-shadow: 0 0 15px rgba(255, 204, 102, 0.4);
+    box-shadow: 0 0 15px rgba(192, 132, 12, 0.6);
 
 }
 /* Sidebar */
 .sidebar-news {
     position: fixed;
-    top: 15px;
+    top: 20px;
     left: 10px;
-    height: 920px;
-    width: 250px;
+    height: 900px;
+    width: 240px;
     background-color: #e0dacd;
     color: #111;
-    margin: 10px auto;
-    padding: 10px;
+    padding: 20px;
     overflow-y: auto;
-    box-shadow: 0 0 20px rgba(255, 204, 102, 0.3);
+    box-shadow: 0 0 15px rgba(192, 132, 12, 0.6);
     z-index: 1030;
     border-radius: 20px;
 }
 
 .sidebar-news h4 {
-    font-size: 1.2rem;
+    
     margin-bottom: 1rem;
 }
 
@@ -81,18 +80,19 @@ body {
 
 /*cikkek*/
 .szekciók {
-    margin: 10px auto;
+    background-color: #e0dacd;
+    margin: 15px;
     padding: 15px;
     border-radius: 20px;
-    box-shadow: 0 0 20px rgba(255, 204, 102, 0.3);
+    box-shadow: 0 0 15px rgba(192, 132, 12, 0.6);
 }
 
 .cikkek {
-    width: 750px ;
+    width: 700px ;
     margin: 10px;
     background-color: #e0dacd;
     border-radius: 20px;
-    box-shadow: 0 0 15px rgba(255, 204, 102, 0.4);
+    box-shadow: 0 0 15px rgba(165, 148, 114, 0.6);
     overflow: hidden;
     transition: transform 0.3s ease;
 }
@@ -125,11 +125,11 @@ body {
 /* Container */
 .container{
     max-width: 1000px;
-    margin: 10px 10px 10px 10px;
+    margin: 15px;
     padding: 20px;
     background-color: #e0dacd;
     border-radius: 20px;
-    box-shadow: 0 0 20px rgba(255, 204, 102, 0.3);
+    box-shadow: 0 0 15px rgba(165, 148, 114, 0.6);
 }
 
 /* Dropdown */
@@ -140,7 +140,7 @@ body {
 .dropdown-menu {
     background-color: #e0dacd;
     border: none;
-    box-shadow: 0px 0px 10px rgba(255, 204, 102, 0.3);
+    box-shadow: 0 0 15px rgba(165, 148, 114, 0.6);
 }
 
 .dropdown-menu a {
@@ -155,7 +155,6 @@ body {
     background-color: rgba(255, 204, 102, 0.2);
     color: #000;
     border-radius: 5px;
-    width: 125px;
     transition: all 0.8 ease;
 }
 
