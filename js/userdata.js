@@ -82,33 +82,26 @@ if (logoutBtn) {
 }
 
 // 📋 Profil betöltése
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem('token');
 
     // Ha nincs token, és nem a bejelentkezés vagy regisztráció oldalán vagyunk, átirányítjuk a felhasználót a bejelentkezés oldalra
     const currentPage = window.location.pathname; // Aktuális oldal elérési útja
 
-    // Az ellenőrzés itt az, hogy ha nincs token, és **nem** a bejelentkezés vagy regisztráció oldalán vagyunk, akkor irányítunk
+    // Csak akkor irányítunk át, ha nincs token, és nem a bejelentkezés vagy regisztrációs oldalon vagyunk
     if (!token && currentPage !== '/auth/bejelentkezés.html' && currentPage !== '/auth/regisztracio.html') {
         console.log("❌ Nincs token, átirányítás a bejelentkezés oldalra.");
-        window.location.href = '/auth/bejelentkezés.html';
+        window.location.href = '/auth/bejelentkezés.html'; // Ha nincs token, bejelentkezés oldalra irányít
         return;
     }
 
     // API hívás a felhasználói adatok lekérésére
-    try {
-        const response = await fetch("https://project-production-feb3.up.railway.app/api/userdata", {
-            method: "GET",
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-            throw new Error('Nem sikerült lekérni az adatokat.');
-        }
-
-        const data = await response.json();
-
-        // Adatok kiírása
+    fetch("https://project-production-feb3.up.railway.app/api/userdata", {
+        method: "GET",
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => response.json())
+    .then(data => {
         document.getElementById('userEmail').innerText = data.email || 'Nincs adat';
         document.getElementById('userName').innerText = data.name || 'Nincs adat';
         document.getElementById('userBalance').innerText = `${data.balance || 0} ${data.currency || 'USD'}`;
@@ -122,9 +115,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             li.textContent = `${stock}: ${stocks[stock]}`;
             stocksList.appendChild(li);
         }
-
-    } catch (err) {
+    })
+    .catch(err => {
         console.error('Hiba történt a profil betöltésekor:', err);
         alert("Hiba történt a profil betöltésekor.");
-    }
+    });
 });
