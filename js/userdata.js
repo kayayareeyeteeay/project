@@ -83,39 +83,33 @@ if (logoutBtn) {
 
 // 📋 Profil betöltése
 document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem('token');
-    const currentPage = window.location.pathname;
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userEmailEl = document.getElementById('userEmail');
+    const userNameEl = document.getElementById('userName');
+    const userBalanceEl = document.getElementById('userBalance');
 
-    // Ha nincs token és nem vagyunk a bejelentkezés vagy regisztráció oldalon
-    if (!token && !currentPage.includes('Pages/auth/bejelentkezés.html') || !currentPage.includes('Pages/authregisztráció.html')) {
-        console.log("❌ Nincs token, átirányítás a bejelentkezés oldalra.");
-        window.location.href = '/auth/bejelentkezés.html'; // Ha nincs token, bejelentkezés oldalra irányít
+    if (!user) {
+        // Ha nincs bejelentkezve a felhasználó (nincs token vagy user adat), akkor a helyére írjuk, hogy jelentkezzen be
+        if (userEmailEl) userEmailEl.innerHTML = 'Jelentkezzen be, hogy lássa az adatait.';
+        if (userNameEl) userNameEl.innerHTML = '<a href="/auth/bejelentkezés.html">Bejelentkezés</a>';
+        if (userBalanceEl) userBalanceEl.innerHTML = '';
         return;
     }
 
-    // API hívás a felhasználói adatok lekérésére
-    fetch("https://project-production-feb3.up.railway.app/api/userdata", {
-        method: "GET",
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('userEmail').innerText = data.email || 'Nincs adat';
-        document.getElementById('userName').innerText = data.name || 'Nincs adat';
-        document.getElementById('userBalance').innerText = `${data.balance || 0} ${data.currency || 'USD'}`;
+    // Ha van bejelentkezve a felhasználó, akkor megjelenítjük az adatait
+    if (userEmailEl) userEmailEl.innerText = user.email || 'Nincs adat';
+    if (userNameEl) userNameEl.innerText = user.name || 'Nincs adat';
+    if (userBalanceEl) userBalanceEl.innerText = `${user.balance || 0} ${user.currency || 'USD'}`;
 
-        // Részvények kiírása
-        const stocksList = document.getElementById('userStocks');
+    // Részvények kiírása
+    const stocksList = document.getElementById('userStocks');
+    if (stocksList) {
         stocksList.innerHTML = '';  // Ürítjük a listát
-        const stocks = data.stockQuantity || {};
+        const stocks = user.stockQuantity || {};
         for (const stock in stocks) {
             const li = document.createElement('li');
             li.textContent = `${stock}: ${stocks[stock]}`;
             stocksList.appendChild(li);
         }
-    })
-    .catch(err => {
-        console.error('Hiba történt a profil betöltésekor:', err);
-        alert("Hiba történt a profil betöltésekor.");
-    });
+    }
 });
