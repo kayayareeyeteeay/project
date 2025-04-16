@@ -1,4 +1,4 @@
-// 📁 server.js (Azure SQL + per-user egyenlegkezelés + fix kezdőoldal route)
+// 📁 server.js (Azure SQL + per-user egyenlegkezelés + fix kezdőoldal + API útvonal debug)
 
 const express = require('express');
 const WebSocket = require('ws');
@@ -33,8 +33,9 @@ app.use(express.static(path.join(__dirname, 'Pages')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 
+// ✅ Root URL átirányítása a bejelentkezés oldalra
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Pages', 'auth', 'bejelentkezés.html'));
+    res.redirect('/auth/bejelentkezés.html');
 });
 
 function authenticateToken(req, res, next) {
@@ -51,6 +52,7 @@ function authenticateToken(req, res, next) {
 
 app.post('/api/register', async (req, res) => {
     const { name, email, password } = req.body;
+    console.log("📩 Regisztrációs kérelem: ", req.body);
     if (!name || !email || !password) {
         return res.status(400).json({ message: 'Hiányzó mezők!' });
     }
@@ -82,13 +84,14 @@ app.post('/api/register', async (req, res) => {
 
         res.status(201).json({ message: 'Sikeres regisztráció!' });
     } catch (err) {
-        console.error('Regisztrációs hiba:', err);
+        console.error('❌ Regisztrációs hiba:', err);
         res.status(500).json({ message: 'Szerverhiba regisztráció közben.' });
     }
 });
 
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
+    console.log("🔑 Bejelentkezési kérelem: ", req.body);
     try {
         const pool = await sql.connect(dbConfig);
         const result = await pool.request()
@@ -110,7 +113,7 @@ app.post('/api/login', async (req, res) => {
 
         res.json({ token, name: user.Nev, email: user.Email });
     } catch (err) {
-        console.error('Bejelentkezési hiba:', err);
+        console.error('❌ Bejelentkezési hiba:', err);
         res.status(500).json({ message: 'Szerverhiba bejelentkezés közben.' });
     }
 });
