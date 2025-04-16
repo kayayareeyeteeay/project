@@ -10,15 +10,8 @@
 
 </head>
 <body>
-  <div id="navbar-container"></div>
-  <script>
-    fetch("/common/navbar.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("navbar-container").innerHTML = data;
-    });
   </script>
-  <div class="container mt-5">
+  <div class="container mt-5 mx-auto">
     <h2 class="text-center">Regisztráció</h2>
     <form id="registerForm" class="mt-4">
       <div class="mb-3">

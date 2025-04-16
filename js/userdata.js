@@ -85,11 +85,32 @@ if (logoutBtn) {
 // 📋 Profil betöltése
 document.addEventListener("DOMContentLoaded", () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) return;
+    const userEmailEl = document.getElementById('userEmail');
+    const userNameEl = document.getElementById('userName');
+    const userBalanceEl = document.getElementById('userBalance');
 
-    const userEmailEl = document.getElementById("userEmail");
-    if (userEmailEl) userEmailEl.innerText = user.email;
+    if (!user) {
+        // Ha nincs bejelentkezve a felhasználó, akkor a helyére írjuk, hogy jelentkezzen be
+        if (userEmailEl) userEmailEl.innerHTML = 'Jelentkezzen be, hogy lássa az adatait.';
+        if (userNameEl) userNameEl.innerHTML = '<a href="/auth/bejelentkezés.html">Bejelentkezés</a>';
+        if (userBalanceEl) userBalanceEl.innerHTML = '';
+        return;
+    }
 
-    const userNameEl = document.getElementById("userName");
-    if (userNameEl) userNameEl.innerText = user.name;
+    // Ha van bejelentkezve a felhasználó, akkor megjelenítjük az adatait
+    if (userEmailEl) userEmailEl.innerText = user.email || 'Nincs adat';
+    if (userNameEl) userNameEl.innerText = user.name || 'Nincs adat';
+    if (userBalanceEl) userBalanceEl.innerText = `${user.balance || 0} ${user.currency || 'USD'}`;
+
+    // Részvények kiírása
+    const stocksList = document.getElementById('userStocks');
+    if (stocksList) {
+        stocksList.innerHTML = '';  // Ürítjük a listát
+        const stocks = user.stockQuantity || {};
+        for (const stock in stocks) {
+            const li = document.createElement('li');
+            li.textContent = `${stock}: ${stocks[stock]}`;
+            stocksList.appendChild(li);
+        }
+    }
 });
