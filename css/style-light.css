@@ -49,7 +49,7 @@ body {
 }
 /* Sidebar */
 .sidebar-news {
-    position: fixed;
+    position:fixed;
     top: 20px;
     left: 10px;
     height: 900px;
@@ -63,10 +63,11 @@ body {
     border-radius: 20px;
 }
 
+/* most ez még nem
 .sidebar-news h4 {
-    
-    margin-bottom: 1rem;
+    font-size: ;
 }
+*/
 
 .sidebar-news ul {
     list-style: none;
@@ -75,7 +76,7 @@ body {
 
 .sidebar-news li {
     margin-bottom: 10px;
-    font-size: 0.9rem;
+    font-size: 16px;
 }
 
 /*cikkek*/
@@ -186,29 +187,3 @@ button {
     transition: 0.3s;
 }
 
-.buy-btn {
-    background-color: #b2b6a1c2;
-    color: white;
-}
-
-.sell-btn {
-    background-color: #ff3333;
-    color: white;
-}
-
-.buy-btn:hover {
-    background-color: #b2b6a1c2;
-}
-
-.sell-btn:hover {
-    background-color: #cc0000;
-}
-
-.reset-btn {
-    background-color: #ffcc00;
-    color: black;
-}
-
-.reset-btn:hover {
-    background-color: #e6b800;
-}

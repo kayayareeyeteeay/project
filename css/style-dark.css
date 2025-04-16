@@ -114,7 +114,7 @@ body {
 }
 
 .cikk-tartalom {
-    color: #333;
+    color: white;
 }
 
 .cikkek h4 {
@@ -186,31 +186,4 @@ button {
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s;
-}
-
-.buy-btn {
-    background-color: #00c3ff;
-    color: white;
-}
-
-.sell-btn {
-    background-color: #ff3333;
-    color: white;
-}
-
-.buy-btn:hover {
-    background-color: #0099cc;
-}
-
-.sell-btn:hover {
-    background-color: #cc0000;
-}
-
-.reset-btn {
-    background-color: #ffcc00;
-    color: black;
-}
-
-.reset-btn:hover {
-    background-color: #e6b800;
 }
