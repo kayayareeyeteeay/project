@@ -83,34 +83,41 @@ if (logoutBtn) {
 }
 
 // 📋 Profil betöltése
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    const userEmailEl = document.getElementById('userEmail');
-    const userNameEl = document.getElementById('userName');
-    const userBalanceEl = document.getElementById('userBalance');
-
     if (!user) {
-        // Ha nincs bejelentkezve a felhasználó, akkor a helyére írjuk, hogy jelentkezzen be
-        if (userEmailEl) userEmailEl.innerHTML = 'Jelentkezzen be, hogy lássa az adatait.';
-        if (userNameEl) userNameEl.innerHTML = '<a href="/auth/bejelentkezés.html">Bejelentkezés</a>';
-        if (userBalanceEl) userBalanceEl.innerHTML = '';
+        document.getElementById("userName").innerText = "Jelentkezzen be!";
+        document.getElementById("userEmail").innerText = "Nincs e-mail";
         return;
     }
 
-    // Ha van bejelentkezve a felhasználó, akkor megjelenítjük az adatait
-    if (userEmailEl) userEmailEl.innerText = user.email || 'Nincs adat';
-    if (userNameEl) userNameEl.innerText = user.name || 'Nincs adat';
-    if (userBalanceEl) userBalanceEl.innerText = `${user.balance || 0} ${user.currency || 'USD'}`;
+    const userEmailEl = document.getElementById("userEmail");
+    if (userEmailEl) userEmailEl.innerText = user.email;
 
-    // Részvények kiírása
-    const stocksList = document.getElementById('userStocks');
-    if (stocksList) {
-        stocksList.innerHTML = '';  // Ürítjük a listát
-        const stocks = user.stockQuantity || {};
-        for (const stock in stocks) {
-            const li = document.createElement('li');
-            li.textContent = `${stock}: ${stocks[stock]}`;
-            stocksList.appendChild(li);
+    const userNameEl = document.getElementById("userName");
+    if (userNameEl) userNameEl.innerText = user.name;
+
+    try {
+        const response = await fetch("/api/userdata", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            const { balance, currency, cryptoQuantity, stockQuantity } = result;
+            document.getElementById("userBalance").innerText = balance + " " + currency;
+            document.getElementById("userCrypto").innerText = JSON.stringify(cryptoQuantity);
+            document.getElementById("userStocks").innerText = JSON.stringify(stockQuantity);
+        } else {
+            document.getElementById("userBalance").innerText = "Nincs adat!";
+            document.getElementById("userCrypto").innerText = "Nincs adat!";
+            document.getElementById("userStocks").innerText = "Nincs adat!";
         }
+    } catch (err) {
+        console.error("❌ Hiba a profil betöltésénél:", err);
     }
 });
