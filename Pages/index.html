@@ -1,59 +1,184 @@
 ﻿<!DOCTYPE html>
 <html lang="hu">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fundelio - Főoldal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link id="theme-style" rel="stylesheet" href="/css/style-dark.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/js/authorization.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fundelio - Főoldal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link id="theme-style" rel="stylesheet" href="/css/style-dark.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/authorization.js"></script>
 </head>
+
 <body class="bodyIndex">
-    <div id="navbar-container"></div>
+  <div id="navbar-container"></div>
   <script>
-    
+
   </script>
-<nav class="navbar navbar-expand-lg">
-       <div class="sidebar-news me-4">
-           <h6 class="mb-2">📰 Újdonságok</h6>
-           <ul class="list-unstyled mb-0">
-             <li><strong>2025.04.02:</strong> Light/dark mód véglegesítve</li>
-             <li><strong>2025.03.27:</strong> Már 6 kriptóval kereskedhetsz</li>
-             <li><strong>2025.03.19:</strong> Ranglista és portfólió megjelenítés</li>
-           </ul>
-         </div>
-       <div class="container-navbar d-flex justify-content-between align-items-center">
-           <ul class="navbar-nav flex-row">
-               <li class="nav-item me-3"><a href="index.html" class="nav-link">Főoldal</a></li>
-               <li class="nav-item me-3"><a href="profil.html" class="nav-link">Profil</a></li>
-               <li class="nav-item dropdown me-3">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Cryptok</a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/Crypto%20Oldalak/btcusdt.html">Bitcoin</a></li>
-                    <li><a class="dropdown-item" href="/Crypto%20Oldalak/dogeusdt.html">Dogecoin</a></li>
-                    <li><a class="dropdown-item" href="/Crypto%20Oldalak/ethusdt.html">Ethereum</a></li>
-                    <li><a class="dropdown-item" href="/Crypto%20Oldalak/solusdt.html">Solana</a></li>
-                    <li><a class="dropdown-item" href="/Crypto%20Oldalak/trumpusdt.html">Trumpcoin</a></li>
-                    <li><a class="dropdown-item" href="/Crypto%20Oldalak/xrpusdt.html">XRP</a></li>
-            </li>
-            <li class="nav-item dropdown me-3">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Részvények</a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/Részvény%20oldalak/spyusdt.html">SPY</a></li>
-                    <li><a class="dropdown-item" href="/Részvény%20oldalak/msftusdt.html">MSFT</a></li>
-                    <li><a class="dropdown-item" href="/Részvény%20oldalak/nvdausdt.html">NVDA</a></li>
-                </ul>
-            </li>
-        </ul>
-    
-            <div class="text-center" style="margin: 0px 250px 0px 0px">
-                <h1 class="mb-0">Üdvözöl a Fundelio!</h1>
-                <p class="mb-0">Játssz, fektess be, és irányítsd a közösséget.</p>
-            </div>
-    
-            <div>
-                <button id="theme-toggle" class="btn btn-sm btn-outline-light">🌙 / ☀️</button>
-            </div>
+  <nav class="navbar navbar-expand-lg">
+    <div class="sidebar-news me-4">
+      <h6 class="mb-2">📰 Újdonságok</h6>
+      <ul class="list-unstyled mb-0">
+        <li><strong>2025.04.02:</strong> Light/dark mód véglegesítve</li>
+        <li><strong>2025.03.27:</strong> Már 6 kriptóval kereskedhetsz</li>
+        <li><strong>2025.03.19:</strong> Ranglista és portfólió megjelenítés</li>
+      </ul>
+    </div>
+    <div class="container-navbar d-flex justify-content-between align-items-center">
+      <ul class="navbar-nav flex-row">
+        <li class="nav-item me-3"><a href="index.html" class="nav-link">Főoldal</a></li>
+        <li class="nav-item me-3"><a href="profil.html" class="nav-link">Profil</a></li>
+        <li class="nav-item dropdown me-3">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Cryptok</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/btcusdt.html">Bitcoin</a></li>
+            <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/dogeusdt.html">Dogecoin</a></li>
+            <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/ethusdt.html">Ethereum</a></li>
+            <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/solusdt.html">Solana</a></li>
+            <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/trumpusdt.html">Trumpcoin</a></li>
+            <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/xrpusdt.html">XRP</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown me-3">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Részvények</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/Részvény%20oldalak/spyusdt.html">SPY</a></li>
+            <li><a class="dropdown-item" href="/Részvény%20oldalak/msftusdt.html">MSFT</a></li>
+            <li><a class="dropdown-item" href="/Részvény%20oldalak/nvdausdt.html">NVDA</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="text-center" style="margin: 0px 250px 0px 0px">
+        <h1 class="mb-0">Üdvözöl a Fundelio!</h1>
+        <p class="mb-0">Játssz, fektess be, és irányítsd a közösséget.</p>
+      </div>
+
+      <div>
+        <button id="theme-toggle" class="btn btn-sm btn-outline-light">🌙 / ☀️</button>
+      </div>
+    </div>
+  </nav>
+
+  <!--<div class="container mt-4">
+        <h3>📘 Mi az a Fundelio?</h3>
+        <p>
+            A Fundelio egy befektetési szimulátor, ahol valódi piaci adatokkal,
+            de játékos környezetben próbálhatod ki magad. Vásárolj kriptót vagy részvényt,
+            építs portfóliót, és nézd meg, mi történne, ha tényleg befektetnél!
+            <strong>MINDIG FIGYELJ ODA!</strong><br>
+            Kezdőként, tapasztalt személy nélkül valódi pénzzel nem javasolt a befektetés,
+            könnyen elveszítheted a pénzed. A valódi pénzzel való befektetés nem játék,
+            nem is szerencsejáték, mert irányítható, de tudás nélkül igazán nagyot lehet bukni.
+            Ezért is jó ez az oldal, itt megtapasztalhatod, mivel olyan mintha valóban
+            befektetnél, de mégis játékos formában.
+        </p>
+    </div>
+  -->
+  <section class="szekciók">
+    <h3>📰 Legfrissebb cikkek</h3>
+    <div class="d-flex flex-wrap justify-content-center">
+      <!-- CIKK 1 -->
+      <article class="cikkek">
+        <img src="img/bitcoin-ingadozas.jpg" class="img-article">
+        <div class="cikk-tartalom p-3">
+          <h4>Miért ingadozik a Bitcoin ára?</h4>
+          <p>
+            A Bitcoin árfolyamát rengeteg tényező befolyásolja, mint például a piaci hangulat, gazdasági hírek és
+            technikai szintek...
+          </p>
+          <footer><small>Publikálva: 2025.04.10. | Szerző: Alex bátyád</small></footer>
         </div>
-    </nav>
+      </article>
+
+      <!-- CIKK 2 -->
+      <article class="cikkek">
+        <img src="img/bitcoin-ingadozas.jpg" class="img-article">
+        <div class="cikk-tartalom p-3">
+          <h4>Kezdőknek: Így állítsd össze első portfóliódat</h4>
+          <p>
+            A Bitcoin árfolyamát rengeteg tényező befolyásolja, mint például a piaci hangulat, gazdasági hírek és
+            technikai szintek...
+          </p>
+          <footer><small>Publikálva: 2025.04.09. | Szerző: Alex bátyád</small></footer>
+        </div>
+      </article>
+    </div>
+    <div class="d-flex flex-wrap justify-content-center">
+      <!-- CIKK 1 -->
+      <article class="cikkek">
+        <img src="img/bitcoin-ingadozas.jpg" class="img-article">
+        <div class="cikk-tartalom p-3">
+          <h4>Miért ingadozik a Bitcoin ára?</h4>
+          <p>
+            A Bitcoin árfolyamát rengeteg tényező befolyásolja, mint például a piaci hangulat, gazdasági hírek és
+            technikai szintek...
+          </p>
+          <footer><small>Publikálva: 2025.04.10. | Szerző: Alex bátyád</small></footer>
+        </div>
+      </article>
+
+      <!-- CIKK 2 -->
+      <article class="cikkek">
+        <img src="img/bitcoin-ingadozas.jpg" class="img-article">
+        <div class="cikk-tartalom p-3">
+          <h4>Kezdőknek: Így állítsd össze első portfóliódat</h4>
+          <p>
+            A Bitcoin árfolyamát rengeteg tényező befolyásolja, mint például a piaci hangulat, gazdasági hírek és
+            technikai szintek...
+          </p>
+          <footer><small>Publikálva: 2025.04.09. | Szerző: Alex bátyád</small></footer>
+        </div>
+      </article>
+    </div>
+  </section>
+
+
+
+
+
+
+  <script>
+    const token = localStorage.getItem('token');
+    fetch('http://localhost:3000/api/user/balance', {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('balance').textContent = data.balance;
+      })
+      .catch(error => console.error('Hiba:', error));
+
+    async function fetchCryptoData() {
+      try {
+        const response = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=5');
+        const data = await response.json();
+        const prices = data.map(entry => parseFloat(entry[4]));
+        const labels = data.map((_, index) => `${index + 1}h`);
+
+        const ctx = document.getElementById('cryptoChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Bitcoin Árfolyam (USD)',
+              data: prices,
+              borderColor: '#00c3ff',
+              backgroundColor: 'rgba(0, 195, 255, 0.2)',
+              fill: true,
+            }]
+          }
+        });
+      } catch (error) {
+        console.error('Hiba a Binance API lekérésében:', error);
+      }
+    }
+    fetchCryptoData();
+  </script>
+  <script src="/js/light-dark.js"></script>
+</body>
+
+</html>
