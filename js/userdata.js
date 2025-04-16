@@ -85,8 +85,10 @@ if (logoutBtn) {
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem('token');
 
-    // Ha nincs token, átirányítjuk a felhasználót a bejelentkezés oldalra
-    if (!token) {
+    // Ha nincs token, és nem a bejelentkezés oldalán vagyunk, átirányítjuk a felhasználót a bejelentkezés oldalra
+    const currentPage = window.location.pathname; // Aktuális oldal elérési útja
+
+    if (!token && currentPage !== '/auth/bejelentkezés.html' && currentPage !== '/auth/regisztracio.html') {
         console.log("❌ Nincs token, átirányítás a bejelentkezés oldalra.");
         window.location.href = '/auth/bejelentkezés.html';
         return;
