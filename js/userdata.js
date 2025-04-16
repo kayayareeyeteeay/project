@@ -1,11 +1,8 @@
 // ✅ userdata.js — Regisztráció, bejelentkezés, kijelentkezés, profil betöltés
 
-// 🔐 Regisztráció kezelése
-console.log("userdata.js loaded")
-console.log("Regisztrációs script aktiválva");
-
 console.log("✅ userdata.js betöltve");
 
+// 🔐 Regisztráció kezelése
 document.getElementById("registerForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -16,7 +13,7 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
     console.log("➡️ Regisztráció elküldve:", { name, email });
 
     try {
-        const response = await fetch("http://localhost:3000/api/register", {
+        const response = await fetch("/api/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, email, password })
@@ -26,21 +23,16 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
 
         if (response.ok) {
             alert("Sikeres regisztráció!");
-            console.log("sikeres regi")
-            window.location.href = "/Pages/auth/bejelentkezés.html";
-
-
+            window.location.href = "/auth/bejelentkezés.html"; // 🔄 Pages nélkül
         } else {
             document.getElementById("errorMsg").innerText = result.message;
             document.getElementById("errorMsg").style.display = "block";
         }
     } catch (err) {
         console.error("❌ Hiba a fetch-ben:", err);
-        alert("Valami gebasz van.");
+        alert("Valami hiba történt regisztráció közben.");
     }
 });
-
-
 
 // 🔑 Bejelentkezés kezelése
 const loginForm = document.getElementById("loginForm");
@@ -52,7 +44,7 @@ if (loginForm) {
         const password = document.getElementById("password").value;
 
         try {
-            const response = await fetch("http://localhost:3000/api/login", {
+            const response = await fetch("/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
@@ -74,7 +66,7 @@ if (loginForm) {
                 }
             }
         } catch (err) {
-            console.error("Bejelentkezési hiba:", err);
+            console.error("❌ Bejelentkezési hiba:", err);
             alert("Hiba történt a bejelentkezés során.");
         }
     });
@@ -86,11 +78,11 @@ if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "bejelentkezes.html";
+        window.location.href = "/auth/bejelentkezés.html";
     });
 }
 
-// 📋 Profil betöltése (opcionális)
+// 📋 Profil betöltése
 document.addEventListener("DOMContentLoaded", () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) return;
@@ -101,4 +93,3 @@ document.addEventListener("DOMContentLoaded", () => {
     const userNameEl = document.getElementById("userName");
     if (userNameEl) userNameEl.innerText = user.name;
 });
-
