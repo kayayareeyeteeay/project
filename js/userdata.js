@@ -1,3 +1,5 @@
+// ✅ userdata.js — Regisztráció, bejelentkezés, kijelentkezés, profil betöltés
+
 console.log("✅ userdata.js betöltve");
 
 // 🔐 Regisztráció kezelése
@@ -11,7 +13,7 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
     console.log("➡️ Regisztráció elküldve:", { name, email });
 
     try {
-        const response = await fetch("https://project-production-feb3.up.railway.app/api/register", {
+        const response = await fetch("/api/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, email, password })
@@ -42,7 +44,7 @@ if (loginForm) {
         const password = document.getElementById("password").value;
 
         try {
-            const response = await fetch("https://project-production-feb3.up.railway.app/api/login", {
+            const response = await fetch("/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
@@ -51,10 +53,9 @@ if (loginForm) {
             const result = await response.json();
 
             if (response.ok) {
-                // Bejelentkezés után mentjük a token-t és a felhasználói adatokat a localStorage-ba
                 localStorage.setItem("token", result.token);
                 localStorage.setItem("user", JSON.stringify({ name: result.name, email: result.email }));
-                window.location.href = "/index.html";  // Átirányítás a főoldalra
+                window.location.href = "/index.html";
             } else {
                 const error = document.getElementById("errorMsg");
                 if (error) {
@@ -77,39 +78,18 @@ if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "/auth/bejelentkezés.html";  // Átirányítás a bejelentkezés oldalra
+        window.location.href = "/auth/bejelentkezés.html";
     });
 }
 
 // 📋 Profil betöltése
 document.addEventListener("DOMContentLoaded", () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    const userEmailEl = document.getElementById('userEmail');
-    const userNameEl = document.getElementById('userName');
-    const userBalanceEl = document.getElementById('userBalance');
+    if (!user) return;
 
-    if (!user) {
-        // Ha nincs bejelentkezve a felhasználó (nincs token vagy user adat), akkor a helyére írjuk, hogy jelentkezzen be
-        if (userEmailEl) userEmailEl.innerHTML = 'Jelentkezzen be, hogy lássa az adatait.';
-        if (userNameEl) userNameEl.innerHTML = '<a href="/auth/bejelentkezés.html">Bejelentkezés</a>';
-        if (userBalanceEl) userBalanceEl.innerHTML = '';
-        return;
-    }
+    const userEmailEl = document.getElementById("userEmail");
+    if (userEmailEl) userEmailEl.innerText = user.email;
 
-    // Ha van bejelentkezve a felhasználó, akkor megjelenítjük az adatait
-    if (userEmailEl) userEmailEl.innerText = user.email || 'Nincs adat';
-    if (userNameEl) userNameEl.innerText = user.name || 'Nincs adat';
-    if (userBalanceEl) userBalanceEl.innerText = `${user.balance || 0} ${user.currency || 'USD'}`;
-
-    // Részvények kiírása
-    const stocksList = document.getElementById('userStocks');
-    if (stocksList) {
-        stocksList.innerHTML = '';  // Ürítjük a listát
-        const stocks = user.stockQuantity || {};
-        for (const stock in stocks) {
-            const li = document.createElement('li');
-            li.textContent = `${stock}: ${stocks[stock]}`;
-            stocksList.appendChild(li);
-        }
-    }
+    const userNameEl = document.getElementById("userName");
+    if (userNameEl) userNameEl.innerText = user.name;
 });
