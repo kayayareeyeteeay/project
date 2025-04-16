@@ -87,6 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Ha nincs token, átirányítjuk a felhasználót a bejelentkezés oldalra
     if (!token) {
+        console.log("❌ Nincs token, átirányítás a bejelentkezés oldalra.");
         window.location.href = '/auth/bejelentkezés.html';
         return;
     }
@@ -103,7 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const data = await response.json();
-        
+
         // Adatok kiírása
         document.getElementById('userEmail').innerText = data.email || 'Nincs adat';
         document.getElementById('userName').innerText = data.name || 'Nincs adat';
@@ -121,5 +122,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
         console.error('Hiba történt a profil betöltésekor:', err);
+        alert("Hiba történt a profil betöltésekor.");
     }
 });
