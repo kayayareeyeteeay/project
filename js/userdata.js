@@ -84,12 +84,10 @@ if (logoutBtn) {
 // 📋 Profil betöltése
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem('token');
-
-    // Az oldal útvonala
     const currentPage = window.location.pathname;
 
-    // Ha nincs token, akkor csak akkor irányítunk át, ha nem vagyunk a regisztrációs vagy bejelentkezési oldalon
-    if (!token && currentPage !== '/auth/bejelentkezés.html' && currentPage !== '/auth/regisztracio.html') {
+    // Ha nincs token és nem vagyunk a bejelentkezés vagy regisztráció oldalon
+    if (!token && !currentPage.includes('bejelentkezés.html') && !currentPage.includes('regisztracio.html')) {
         console.log("❌ Nincs token, átirányítás a bejelentkezés oldalra.");
         window.location.href = '/auth/bejelentkezés.html'; // Ha nincs token, bejelentkezés oldalra irányít
         return;
