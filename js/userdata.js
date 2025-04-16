@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentPage = window.location.pathname;
 
     // Ha nincs token és nem vagyunk a bejelentkezés vagy regisztráció oldalon
-    if (!token && !currentPage.includes('bejelentkezés.html') && !currentPage.includes('regisztracio.html')) {
+    if (!token && !currentPage.includes('Pages/auth/bejelentkezés.html') || !currentPage.includes('Pages/authregisztráció.html')) {
         console.log("❌ Nincs token, átirányítás a bejelentkezés oldalra.");
         window.location.href = '/auth/bejelentkezés.html'; // Ha nincs token, bejelentkezés oldalra irányít
         return;
