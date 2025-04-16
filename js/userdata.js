@@ -84,7 +84,6 @@ if (logoutBtn) {
 // 📋 Profil betöltése
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem("user"));
 
     // Ha nincs token, átirányítjuk a felhasználót a bejelentkezés oldalra
     if (!token) {
