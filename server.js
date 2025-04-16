@@ -1,3 +1,5 @@
+// 📁 server.js (Átalakítva: Azure SQL + per-user egyenlegkezelés)
+
 const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
@@ -8,33 +10,29 @@ const nodemailer = require('nodemailer');
 const sql = require('mssql');
 const exec = require('child_process').exec;
 const axios = require('axios');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET_KEY = "fundelio_secret";
+const SECRET_KEY = process.env.JWT_SECRET || "fundelio_secret";
 
 const dbConfig = {
-    user: 'SA',
-    password: 'jelszavad',
-    server: 'localhost',
-    database: 'FundelioDB',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_NAME,
     options: {
         encrypt: true,
-        trustServerCertificate: true
+        trustServerCertificate: false
     }
 };
 
-// Middleware
 app.use(cors());
 app.use(express.json());
-// Statikus fájlok kiszolgálása
 app.use(express.static(path.join(__dirname, 'Pages')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 
-
-
-// 🔐 Auth middleware
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -47,30 +45,33 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// 🔐 API: Regisztráció
 app.post('/api/register', async (req, res) => {
     const { name, email, password } = req.body;
-
     try {
         const pool = await sql.connect(dbConfig);
         const check = await pool.request()
             .input('email', sql.NVarChar, email)
-            .query('SELECT * FROM Felhasználó WHERE Email = @email');
+            .query('SELECT * FROM Felhasznalo WHERE Email = @email');
 
         if (check.recordset.length > 0) {
             return res.status(400).json({ message: 'Ez az e-mail már foglalt.' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        await pool.request()
+        const insertUser = await pool.request()
             .input('name', sql.NVarChar, name)
             .input('email', sql.NVarChar, email)
             .input('password', sql.NVarChar, hashedPassword)
-            .input('balance', sql.Decimal, 10000)
+            .query(`INSERT INTO Felhasznalo (Nev, Email, Jelszo) OUTPUT INSERTED.FelhasznaloID VALUES (@name, @email, @password)`);
+
+        const userId = insertUser.recordset[0].FelhasznaloID;
+
+        await pool.request()
+            .input('id', sql.Int, userId)
+            .input('balance', sql.Decimal(18, 2), 10000)
             .input('crypto', sql.NVarChar, JSON.stringify({ btcusdt: 0 }))
-            .query(`INSERT INTO Felhasználó (Név, Email, Jelszó, Egyenleg, KriptoMenynyiség)
-                    VALUES (@name, @email, @password, @balance, @crypto)`);
+            .input('stocks', sql.NVarChar, JSON.stringify({}))
+            .query(`INSERT INTO FelhasznaloEgyenleg (FelhasznaloID, Egyenleg, KriptoMennyiseg, ReszvenyMennyiseg) VALUES (@id, @balance, @crypto, @stocks)`);
 
         res.status(201).json({ message: 'Sikeres regisztráció!' });
     } catch (err) {
@@ -79,50 +80,86 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// 🔐 API: Bejelentkezés
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
-
     try {
         const pool = await sql.connect(dbConfig);
         const result = await pool.request()
             .input('email', sql.NVarChar, email)
-            .query('SELECT * FROM Felhasználó WHERE Email = @email');
+            .query('SELECT * FROM Felhasznalo WHERE Email = @email');
 
         if (result.recordset.length === 0) {
             return res.status(401).json({ message: 'Hibás e-mail vagy jelszó.' });
         }
 
         const user = result.recordset[0];
-        const valid = await bcrypt.compare(password, user.Jelszó);
+        const valid = await bcrypt.compare(password, user.Jelszo);
 
         if (!valid) {
             return res.status(401).json({ message: 'Hibás e-mail vagy jelszó.' });
         }
 
-        const token = jwt.sign({ id: user.FelhasználóID }, SECRET_KEY, { expiresIn: '2h' });
+        const token = jwt.sign({ id: user.FelhasznaloID }, SECRET_KEY, { expiresIn: '2h' });
 
-        res.json({ token, name: user.Név, email: user.Email });
+        res.json({ token, name: user.Nev, email: user.Email });
     } catch (err) {
         console.error('Bejelentkezési hiba:', err);
         res.status(500).json({ message: 'Szerverhiba bejelentkezés közben.' });
     }
 });
 
-// 🔄 Binance WebSocket stream
+app.get('/api/userdata', authenticateToken, async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        const result = await pool.request()
+            .input('id', sql.Int, req.user.id)
+            .query('SELECT Egyenleg, KriptoMennyiseg, ReszvenyMennyiseg FROM FelhasznaloEgyenleg WHERE FelhasznaloID = @id');
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ message: 'Nincs egyenleg adat.' });
+        }
+
+        const row = result.recordset[0];
+        res.json({
+            balance: row.Egyenleg,
+            cryptoQuantity: JSON.parse(row.KriptoMennyiseg || '{}'),
+            stockQuantity: JSON.parse(row.ReszvenyMennyiseg || '{}')
+        });
+    } catch (err) {
+        console.error('Lekeresési hiba:', err);
+        res.status(500).json({ message: 'Szerverhiba.' });
+    }
+});
+
+app.post('/api/userdata', authenticateToken, async (req, res) => {
+    const { balance, cryptoQuantity, stockQuantity } = req.body;
+    try {
+        const pool = await sql.connect(dbConfig);
+        await pool.request()
+            .input('id', sql.Int, req.user.id)
+            .input('balance', sql.Decimal(18, 2), balance)
+            .input('crypto', sql.NVarChar, JSON.stringify(cryptoQuantity))
+            .input('stocks', sql.NVarChar, JSON.stringify(stockQuantity))
+            .query(`UPDATE FelhasznaloEgyenleg SET Egyenleg = @balance, KriptoMennyiseg = @crypto, ReszvenyMennyiseg = @stocks WHERE FelhasznaloID = @id`);
+
+        res.json({ message: 'Adatok frissítve.' });
+    } catch (err) {
+        console.error('Mentési hiba:', err);
+        res.status(500).json({ message: 'Hiba mentés közben.' });
+    }
+});
+
 const symbols = ['btcusdt', 'ethusdt', 'dogeusdt', 'xrpusdt', 'trumpusdt', 'solusdt'];
 const streams = symbols.map(symbol => `${symbol}@trade`).join('/');
 const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
 let prices = {};
-
 ws.on('message', (data) => {
     const parsedData = JSON.parse(data);
     const trade = parsedData.data;
     prices[trade.s.toLowerCase()] = trade.p;
 });
 
-// API végpont élő kriptó árakhoz
 app.get('/api/live/:symbol', (req, res) => {
     const symbol = req.params.symbol.toLowerCase();
     if (prices[symbol]) {
@@ -132,8 +169,7 @@ app.get('/api/live/:symbol', (req, res) => {
     }
 });
 
-// 📈 Részvény API (Twelve Data)
-const TWELVE_DATA_API_KEY = 'b6e3585ebb094839929ee2d793b8e45d';
+const TWELVE_DATA_API_KEY = process.env.TWELVE_API_KEY;
 const stockSymbols = ['SPY', 'NVDA', 'MSFT'];
 
 app.get('/api/stocks', async (req, res) => {
@@ -148,44 +184,10 @@ app.get('/api/stocks', async (req, res) => {
     }
 });
 
-// 🏠 Kezdőlap (bejelentkezés oldal)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Pages', 'auth', 'bejelentkezés.html'));
 });
 
-// ⚙️ Globális beállítások betöltése
-async function loadGlobalSettings() {
-    try {
-        const pool = await sql.connect(dbConfig);
-        const result = await pool.request().query("SELECT TOP 1 * FROM GlobalSettings");
-        if (result.recordset.length > 0) {
-            const row = result.recordset[0];
-            globalCurrency = row.currency || 'USD';
-            globalCryptoQuantity = JSON.parse(row.cryptoQuantity || '{}');
-            globalStockQuantity = JSON.parse(row.stockQuantity || '{}');
-            console.log("Globális beállítások betöltve:", { globalCurrency, globalCryptoQuantity, globalStockQuantity });
-        } else {
-            console.log("Nincs globális beállítás, alapértékek betöltve.");
-        }
-    } catch (error) {
-        console.error("⚠️ Globális beállítás hiba:", error.message);
-    }
-}
-
-// 🚀 Indítás
-loadGlobalSettings()
-  .catch(err => {
-    console.error("⚠️ Globális beállítások betöltése sikertelen:", err.message);
-  })
-  .finally(() => {
-    app.listen(PORT, () => {
-      console.log(`✅ Szerver fut: http://localhost:${PORT}`);
-    });
-  });
-
-// Indítás
-//loadGlobalSettings().then(() => {
-//    app.listen(PORT, () => {
-//        console.log(`✅ Szerver fut: http://localhost:${PORT}`);
-//    });
-//});
+app.listen(PORT, () => {
+    console.log(`✅ Szerver fut: http://localhost:${PORT}`);
+});
