@@ -89,7 +89,7 @@
   
     async function fetchCryptoPrice(symbol) {
       try {
-        const response = await fetch(`api/live/btcusdt`);
+        const response = await fetch(`/api/live/btcusdt`);
         const data = await response.json();
         return parseFloat(data.price);
       } catch (error) {
