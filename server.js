@@ -51,7 +51,7 @@ app.post('/api/register', async (req, res) => {
         const pool = await sql.connect(dbConfig);
         const check = await pool.request()
             .input('email', sql.NVarChar, email)
-            .query('SELECT * FROM Felhasznalo WHERE Email = @email');
+            .query('SELECT * FROM Felhasználó WHERE Email = @email');
 
         if (check.recordset.length > 0) {
             return res.status(400).json({ message: 'Ez az e-mail már foglalt.' });
@@ -62,9 +62,9 @@ app.post('/api/register', async (req, res) => {
             .input('name', sql.NVarChar, name)
             .input('email', sql.NVarChar, email)
             .input('password', sql.NVarChar, hashedPassword)
-            .query(`INSERT INTO Felhasznalo (Nev, Email, Jelszo) OUTPUT INSERTED.FelhasznaloID VALUES (@name, @email, @password)`);
+            .query(`INSERT INTO Felhasználó (Név, Email, Jelszó) OUTPUT INSERTED.FelhasználóID VALUES (@name, @email, @password)`);
 
-        const userId = insertUser.recordset[0].FelhasznaloID;
+        const userId = insertUser.recordset[0].FelhasználóID;
 
         await pool.request()
             .input('id', sql.Int, userId)
@@ -72,7 +72,7 @@ app.post('/api/register', async (req, res) => {
             .input('currency', sql.NVarChar, 'USD')
             .input('crypto', sql.NVarChar, JSON.stringify({ btcusdt: 0 }))
             .input('stocks', sql.NVarChar, JSON.stringify({}))
-            .query(`INSERT INTO FelhasznaloEgyenleg (FelhasznaloID, Egyenleg, Deviza, CryptoMennyiség, RészvényMennyiség) VALUES (@id, @balance, @currency, @crypto, @stocks)`);
+            .query(`INSERT INTO FelhasználóEgyenleg (FelhasználóID, Egyenleg, Deviza, CryptoMennyiség, RészvényMennyiség) VALUES (@id, @balance, @currency, @crypto, @stocks)`);
 
         res.status(201).json({ message: 'Sikeres regisztráció!' });
     } catch (err) {
@@ -88,22 +88,22 @@ app.post('/api/login', async (req, res) => {
         const pool = await sql.connect(dbConfig);
         const result = await pool.request()
             .input('email', sql.NVarChar, email)
-            .query('SELECT * FROM Felhasznalo WHERE Email = @email');
+            .query('SELECT * FROM Felhasználó WHERE Email = @email');
 
         if (result.recordset.length === 0) {
             return res.status(401).json({ message: 'Hibás e-mail vagy jelszó.' });
         }
 
         const user = result.recordset[0];
-        const valid = await bcrypt.compare(password, user.Jelszo);
+        const valid = await bcrypt.compare(password, user.Jelszó);
 
         if (!valid) {
             return res.status(401).json({ message: 'Hibás e-mail vagy jelszó.' });
         }
 
-        const token = jwt.sign({ id: user.FelhasznaloID }, SECRET_KEY, { expiresIn: '2h' });
+        const token = jwt.sign({ id: user.FelhasználóID }, SECRET_KEY, { expiresIn: '2h' });
 
-        res.json({ token, name: user.Nev, email: user.Email });
+        res.json({ token, name: user.Név, email: user.Email });
     } catch (err) {
         console.error('Bejelentkezési hiba:', err);
         res.status(500).json({ message: 'Szerverhiba bejelentkezés közben.' });
@@ -116,7 +116,7 @@ app.get('/api/userdata', authenticateToken, async (req, res) => {
         const pool = await sql.connect(dbConfig);
         const result = await pool.request()
             .input('id', sql.Int, req.user.id)
-            .query('SELECT Egyenleg, Deviza, CryptoMennyiség, RészvényMennyiség FROM FelhasznaloEgyenleg WHERE FelhasznaloID = @id');
+            .query('SELECT Egyenleg, Deviza, CryptoMennyiség, RészvényMennyiség FROM FelhasználóEgyenleg WHERE FelhasználóID = @id');
 
         if (result.recordset.length === 0) {
             return res.status(404).json({ message: 'Nincs egyenleg adat.' });
@@ -145,7 +145,7 @@ app.post('/api/userdata', authenticateToken, async (req, res) => {
             .input('currency', sql.NVarChar, currency)
             .input('crypto', sql.NVarChar, JSON.stringify(cryptoQuantity))
             .input('stocks', sql.NVarChar, JSON.stringify(stockQuantity))
-            .query(`UPDATE FelhasznaloEgyenleg SET Egyenleg = @balance, Deviza = @currency, CryptoMennyiség = @crypto, RészvényMennyiség = @stocks WHERE FelhasznaloID = @id`);
+            .query(`UPDATE FelhasználóEgyenleg SET Egyenleg = @balance, Deviza = @currency, CryptoMennyiség = @crypto, RészvényMennyiség = @stocks WHERE FelhasználóID = @id`);
 
         res.json({ message: 'Adatok frissítve.' });
     } catch (err) {
