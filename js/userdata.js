@@ -86,7 +86,7 @@ if (logoutBtn) {
 document.addEventListener("DOMContentLoaded", async () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) {
-        document.getElementById("userName").innerHTML = '<a href="Pages/auth/bejelentkezés.html">Jelentkezzen be!</a>';
+        document.getElementById("userName").innerHTML = '<a href="auth/bejelentkezés.html">Jelentkezzen be!</a>';
         document.getElementById("userEmail").innerText = "Nincs e-mail";
         return;
     }
