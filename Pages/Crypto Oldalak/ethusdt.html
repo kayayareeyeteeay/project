@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum - Fundelio</title>
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link id="theme-style" rel="stylesheet" href="/css/style-dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/light-dark.js"></script>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <script>
+    fetch("/common/navbar.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("navbar-container").innerHTML = data;
+    });
+  </script>
+    
+
+    <div class="container mt-4 mx-auto">
+        <h2>Ethereum Kereskedés</h2>
+        <div class="row">
+            <div class="col-6">
+                <p>Rendelkezésre álló egyenleg: <span id="balance">10,000 USD</span></p>
+                <p id="ethPrice">ETH: N/A</p>
+
+                <!-- Input a vásárolni kívánt ETH mennyiséghez -->
+                <div class="mb-3">
+                    <label for="ethAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+                    <input type="number" class="form-control" id="ethAmountInput" min="0" step="any" placeholder="ETH mennyiség" oninput="updateCost()">
+                </div>
+
+                <!-- Költség kiszámítása -->
+                <p id="totalCost">Költség: N/A</p>
+
+                <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
+                <button class="btn btn-danger" onclick="sellCrypto()">Eladás</button>
+                <button class="btn btn-secondary" onclick="resetCrypto()">Újraindítás</button>
+            </div>
+            <div class="col-6">
+                <canvas id="ethChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let balance = 10000;  // Kezdő egyenleg USD-ben
+        let ethAmount = 0;  // Vásárolt ETH mennyiség
+        let currentEthPrice = 0;  // A legfrissebb ETH ár
+
+        // Kriptopénz árfolyam lekérése
+        async function fetchCryptoPrice(symbol) {
+            try {
+                const response = await fetch(`/api/live/ethusdt`);
+                const data = await response.json();
+
+                console.log(symbol)
+                console.log('API VÁLASZ:', data)
+                
+                if (data.price) {
+                    return parseFloat(data.price);
+                } else {
+                    console.error("⚠️ API hiba:", data);
+                    return null;
+                }
+            } catch (error) {
+                console.error("❌ API hiba:", error);
+                return null;
+            }
+        }
+
+        
+        let ethChart;
+        let ethPrices = [];
+        let labels = [];
+
+        async function updateChart() {
+            const price = await fetchCryptoPrice('ethusdt');
+            if (price !== null) {
+                currentEthPrice = price;  // A legfrissebb ár frissítése
+                // Frissíti a grafikon adatokat
+                ethPrices.push(price);
+                labels.push(new Date().toLocaleTimeString());
+
+                // Ha túl sok adat van, eltávolítjuk a legelsőt
+                if (ethPrices.length > 10) {
+                    ethPrices.shift();
+                    labels.shift();
+                }
+
+                // Frissíti a grafikonot
+                ethChart.data.labels = labels;
+                ethChart.data.datasets[0].data = ethPrices;
+                ethChart.update();
+                updateCost();  // Frissíti a költséget a legújabb árfolyammal
+            }
+        }
+
+        // Grafikon inicializálása
+        async function createChart() {
+            const ctx = document.getElementById('ethChart').getContext('2d');
+            ethChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ethereum árfolyam (USD)',
+                        data: ethPrices,
+                        borderColor: 'rgb(75, 192, 192)',
+                        fill: false,
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+
+            // Frissítés minden 5 másodpercben
+            setInterval(updateChart, 5000);
+        }
+
+        // Vásárlás művelet
+        async function buyCrypto() {
+            const amountToBuy = parseFloat(document.getElementById('ethAmountInput').value);
+            if (currentEthPrice !== 0 && balance >= currentEthPrice * amountToBuy && amountToBuy > 0) {
+                balance -= currentEthPrice * amountToBuy;
+                ethAmount += amountToBuy;
+                updateBalance();
+            }
+        }
+
+        // Eladás művelet
+        async function sellCrypto() {
+            if (currentEthPrice !== 0 && ethAmount > 0) {
+                const amountToSell = ethAmount;
+                balance += currentEthPrice * amountToSell;
+                ethAmount = 0;
+                updateBalance();
+            }
+        }
+
+        // Egyenleg frissítése
+        function updateBalance() {
+            document.getElementById('balance').innerText = `${balance.toFixed(2)} USD`;
+            document.getElementById('ethPrice').innerText = `ETH: ${ethAmount.toFixed(4)}`;
+        }
+
+        // Költség frissítése
+        function updateCost() {
+            const amount = parseFloat(document.getElementById('ethAmountInput').value);
+            if (currentEthPrice !== 0 && amount > 0) {
+                const cost = currentEthPrice * amount;
+                document.getElementById('totalCost').innerText = `Költség: ${cost.toFixed(2)} USD`;
+            } else {
+                document.getElementById('totalCost').innerText = "Költség: N/A";
+            }
+        }
+
+        // Újraindítás
+        function resetCrypto() {
+            balance = 10000;  // Visszaállítás a kezdőegyenlegre
+            ethAmount = 0;  // Törlés a vásárolt ETH mennyiségéből
+            updateBalance();
+        }
+
+        createChart();  // Grafikon inicializálása
+    </script>
+<script src="/js/userdata.js"></script>
+</body>
+
+</html>
