@@ -1,180 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ripple (XRP) - Fundelio</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ripple (XRP) - Fundelio</title>
 
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link id="theme-style" rel="stylesheet" href="/css/style-dark.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="/js/light-dark.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link id="theme-style" rel="stylesheet" href="/css/style-dark.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script defer src="/js/light-dark.js"></script>
 </head>
 <body>
   <div id="navbar-container"></div>
   <script>
     fetch("/common/navbar.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("navbar-container").innerHTML = data;
-    });
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar-container").innerHTML = data;
+      });
   </script>
-    
 
-    <div class="container mt-4 mx-auto">
-        <h2>Ripple (XRP) Kereskedés</h2>
-        <div class="row">
-            <div class="col-6">
-                <p>Rendelkezésre álló egyenleg: <span id="balance">10,000 USD</span></p>
-                <p id="xrpPrice">Ripple (XRP): N/A</p>
+  <div class="container mt-4">
+    <h2 class="text-center mb-4">Ripple (XRP) Kereskedés</h2>
+    <div class="row">
+      <div class="col-12 col-md-6 mb-4">
+        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">10,000 USD</span></p>
+        <p id="xrpPrice"><strong>XRP:</strong> N/A</p>
 
-                <!-- Input a vásárolni kívánt Ripple (XRP) mennyiséghez -->
-                <div class="mb-3">
-                    <label for="xrpAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
-                    <input type="number" class="form-control" id="xrpAmountInput" min="0" step="any" placeholder="Ripple (XRP) mennyiség" oninput="updateCost()">
-                </div>
-
-                <!-- Költség kiszámítása -->
-                <p id="totalCost">Költség: N/A</p>
-
-                <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
-                <button class="btn btn-danger" onclick="sellCrypto()">Eladás</button>
-                <button class="btn btn-secondary" onclick="resetCrypto()">Újraindítás</button>
-            </div>
-            <div class="col-6">
-                <canvas id="xrpChart"></canvas>
-            </div>
+        <div class="mb-3">
+          <label for="xrpAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+          <input type="number" class="form-control" id="xrpAmountInput" min="0" step="any" placeholder="XRP mennyiség" oninput="updateCost()">
         </div>
+
+        <p id="totalCost">Költség: N/A</p>
+
+        <div class="d-grid gap-2">
+          <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
+          <button class="btn btn-danger" onclick="sellCrypto()">Eladás</button>
+          <button class="btn btn-secondary" onclick="resetCrypto()">Újraindítás</button>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 d-flex justify-content-center align-items-center">
+        <canvas id="xrpChart" class="chart-center" style="max-height: 300px;"></canvas>
+      </div>
     </div>
+  </div>
 
-    <script>
+  <script>
+    let balance = 10000;
+    let xrpAmount = 0;
+    let currentXrpPrice = 0;
 
-        let balance = 10000;  // Kezdő egyenleg USD-ben
-        let xrpAmount = 0;  // Vásárolt Ripple (XRP) mennyiség
-        let currentxrpPrice = 0;  // A legfrissebb Ripple (XRP) ár
+    async function fetchCryptoPrice() {
+      try {
+        const response = await fetch(`/api/live/xrpusdt`);
+        const data = await response.json();
+        return parseFloat(data.price);
+      } catch (error) {
+        console.error("API hiba:", error);
+        return null;
+      }
+    }
 
-        // Kriptopénz árfolyam lekérése
-        async function fetchCryptoPrice(symbol) {
-            try {
-                const response = await fetch(`/api/live/xrpusdt`);
-                const data = await response.json();
-                
-                if (data.price) {
-                    return parseFloat(data.price);
-                } else {
-                    console.error("⚠️ API hiba:", data);
-                    return null;
-                }
-            } catch (error) {
-                console.error("❌ API hiba:", error);
-                return null;
+    let xrpChart;
+    let xrpPrices = [];
+    let labels = [];
+
+    async function updateChart() {
+      const price = await fetchCryptoPrice();
+      if (price !== null) {
+        currentXrpPrice = price;
+        xrpPrices.push(price);
+        labels.push(new Date().toLocaleTimeString());
+
+        if (xrpPrices.length > 10) {
+          xrpPrices.shift();
+          labels.shift();
+        }
+
+        xrpChart.data.labels = labels;
+        xrpChart.data.datasets[0].data = xrpPrices;
+        xrpChart.update();
+        updateCost();
+      }
+    }
+
+    async function createChart() {
+      const ctx = document.getElementById("xrpChart").getContext("2d");
+      xrpChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Ripple (XRP) árfolyam (USD)",
+            data: xrpPrices,
+            borderColor: "rgb(75, 192, 192)",
+            fill: false
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: false
             }
+          }
         }
+      });
+      setInterval(updateChart, 5000);
+    }
 
-        // Képzés egy valós idejű grafikon
-        let xrpChart;
-        let xrpPrices = [];
-        let labels = [];
+    async function buyCrypto() {
+      const amount = parseFloat(document.getElementById("xrpAmountInput").value);
+      if (currentXrpPrice !== 0 && amount > 0 && balance >= currentXrpPrice * amount) {
+        balance -= currentXrpPrice * amount;
+        xrpAmount += amount;
+        updateBalance();
+      }
+    }
 
-        async function updateChart() {
-            const price = await fetchCryptoPrice('xrpusdt');
-            if (price !== null) {
-                currentxrpPrice = price;  // A legfrissebb ár frissítése
-                xrpPrices.push(price);
-                labels.push(new Date().toLocaleTimeString());
+    async function sellCrypto() {
+      if (currentXrpPrice !== 0 && xrpAmount > 0) {
+        balance += currentXrpPrice * xrpAmount;
+        xrpAmount = 0;
+        updateBalance();
+      }
+    }
 
-                // Ha túl sok adat van, eltávolítjuk a legelsőt
-                if (xrpPrices.length > 10) {
-                    xrpPrices.shift();
-                    labels.shift();
-                }
+    function updateBalance() {
+      document.getElementById("balance").innerText = `${balance.toFixed(2)} USD`;
+      document.getElementById("xrpPrice").innerText = `XRP: ${xrpAmount.toFixed(4)}`;
+    }
 
-                // Frissíti a grafikonot
-                xrpChart.data.labels = labels;
-                xrpChart.data.datasets[0].data = xrpPrices;
-                xrpChart.update();
-                updateCost();  // Frissíti a költséget a legújabb árfolyammal
-            }
-        }
+    function updateCost() {
+      const amount = parseFloat(document.getElementById("xrpAmountInput").value);
+      if (currentXrpPrice !== 0 && amount > 0) {
+        const cost = currentXrpPrice * amount;
+        document.getElementById("totalCost").innerText = `Költség: ${cost.toFixed(2)} USD`;
+      } else {
+        document.getElementById("totalCost").innerText = "Költség: N/A";
+      }
+    }
 
-        // Grafikon inicializálása
-        async function createChart() {
-            const ctx = document.getElementById('xrpChart').getContext('2d');
-            xrpChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'xrpcoin árfolyam (USD)',
-                        data: xrpPrices,
-                        borderColor: 'rgb(75, 192, 192)',
-                        fill: false,
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: false
-                        }
-                    }
-                }
-            });
+    function resetCrypto() {
+      balance = 10000;
+      xrpAmount = 0;
+      updateBalance();
+    }
 
-            // Frissítés minden 5 másodpercben
-            setInterval(updateChart, 5000);
-        }
+    window.onload = async () => {
+      updateBalance();
+      createChart();
+    };
+  </script>
 
-        // Vásárlás művelet
-        async function buyCrypto() {
-            const amountToBuy = parseFloat(document.getElementById('xrpAmountInput').value);
-            if (currentxrpPrice !== 0 && balance >= currentxrpPrice * amountToBuy && amountToBuy > 0) {
-                balance -= currentxrpPrice * amountToBuy;
-                xrpAmount += amountToBuy;
-                updateBalance();
-            }
-        }
-
-        // Eladás művelet
-        async function sellCrypto() {
-            if (currentxrpPrice !== 0 && xrpAmount > 0) {
-                const amountToSell = xrpAmount;
-                balance += currentxrpPrice * amountToSell;
-                xrpAmount = 0;
-                updateBalance();
-            }
-        }
-
-        // Egyenleg frissítése
-        function updateBalance() {
-            document.getElementById('balance').innerText = `${balance.toFixed(2)} USD`;
-            document.getElementById('xrpPrice').innerText = `Ripple (XRP): ${xrpAmount.toFixed(4)}`;
-        }
-
-        // Költség frissítése
-        function updateCost() {
-            const amount = parseFloat(document.getElementById('xrpAmountInput').value);
-            if (currentxrpPrice !== 0 && amount > 0) {
-                const cost = currentxrpPrice * amount;
-                document.getElementById('totalCost').innerText = `Költség: ${cost.toFixed(2)} USD`;
-            } else {
-                document.getElementById('totalCost').innerText = "Költség: N/A";
-            }
-        }
-
-        // Újraindítás
-        function resetCrypto() {
-            balance = 10000;  // Visszaállítás a kezdőegyenlegre
-            xrpAmount = 0;  // Törlés a vásárolt Ripple (XRP) mennyiségéből
-            updateBalance();
-        }
-
-        createChart();  // Grafikon inicializálása
-    </script>
-    <script src="/js/userdata.js"></script>
+  <script type="module" src="/js/userdata.js"></script>
 </body>
-
 </html>
