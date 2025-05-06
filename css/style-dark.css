@@ -187,30 +187,7 @@ button {
     cursor: pointer;
     transition: 0.3s;
 }
-/* Középre igazított Chart container */
-.chart-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-  }
-  
-  /* A chart mindig igazodjon a konténerhez */
-  .chart-wrapper canvas {
-    width: 100% !important;
-    height: auto !important;
-    display: block;
-  }
- /* A Chart tényleges középre húzása az oszlopon belül */
- #btcChart {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%;
-    height: auto;
-  }
-  
+
   
   
   
