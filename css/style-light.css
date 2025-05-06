@@ -114,12 +114,13 @@ body {
 /* Container */
 .container {
     max-width: 1000px;
-    margin: 15px;
+    margin: 15px auto; 
     padding: 20px;
     background-color: #e0dacd;
     border-radius: 20px;
     box-shadow: 0 0 15px rgba(165, 148, 114, 0.6);
 }
+
 
 /* Dropdown */
 .dropdown:hover .dropdown-menu {
