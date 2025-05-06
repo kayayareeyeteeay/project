@@ -1,4 +1,4 @@
-// 📁 server.js (Frissített: Azure SQL + pontos mezőnevekkel)
+// 📁 server.js – Fundelio (Teljes verzió emailes jelszó visszaállítással és regisztrációval)
 
 const express = require('express');
 const WebSocket = require('ws');
@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sql = require('mssql');
 const axios = require('axios');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
@@ -24,6 +25,16 @@ const dbConfig = {
         trustServerCertificate: false
     }
 };
+
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT),
+    secure: false,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 app.use(cors());
 app.use(express.json());
@@ -44,7 +55,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// 🔐 Regisztráció
+// 🔐 Regisztráció e-mail küldéssel
 app.post('/api/register', async (req, res) => {
     const { name, email, password } = req.body;
     try {
@@ -74,6 +85,13 @@ app.post('/api/register', async (req, res) => {
             .input('stocks', sql.NVarChar, JSON.stringify({}))
             .query(`INSERT INTO FelhasználóEgyenleg (FelhasználóID, Egyenleg, Deviza, CryptoMennyiség, RészvényMennyiség) VALUES (@id, @balance, @currency, @crypto, @stocks)`);
 
+        await transporter.sendMail({
+            from: `Fundelio <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Sikeres regisztráció - Fundelio",
+            html: `<h2>Kedves ${name}!</h2><p>Köszönjük, hogy regisztráltál a Fundeliora.</p><p>Most már be tudsz jelentkezni.</p>`
+        });
+
         res.status(201).json({ message: 'Sikeres regisztráció!' });
     } catch (err) {
         console.error('Regisztrációs hiba:', err);
@@ -81,7 +99,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// 🔑 Bejelentkezés
+// 🔐 Bejelentkezés
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -110,7 +128,58 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 🔐 Egyenleg lekérés és mentés
+// 🔁 Elfelejtett jelszó - email küldés
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const pool = await sql.connect(dbConfig);
+        const result = await pool.request()
+            .input('email', sql.NVarChar, email)
+            .query('SELECT FelhasználóID, Név FROM Felhasználó WHERE Email = @email');
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ message: 'Nem található ilyen e-mail.' });
+        }
+
+        const user = result.recordset[0];
+        const resetToken = jwt.sign({ id: user.FelhasználóID }, SECRET_KEY, { expiresIn: '15m' });
+        const resetLink = `https://fundelio.hu/reset-password.html?token=${resetToken}`;
+
+        await transporter.sendMail({
+            from: `Fundelio <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Jelszó visszaállítás - Fundelio",
+            html: `<h2>Szia ${user.Név}!</h2><p>Kattints a linkre, hogy új jelszót állíts be:</p><a href="${resetLink}">${resetLink}</a>`
+        });
+
+        res.json({ message: 'E-mail elküldve.' });
+    } catch (err) {
+        console.error("Forgot password error:", err);
+        res.status(500).json({ message: 'Hiba történt.' });
+    }
+});
+
+// 🔁 Jelszó újraállítás tokennel
+app.post('/api/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const hashed = await bcrypt.hash(newPassword, 10);
+
+        const pool = await sql.connect(dbConfig);
+        await pool.request()
+            .input('id', sql.Int, decoded.id)
+            .input('pwd', sql.NVarChar, hashed)
+            .query('UPDATE Felhasználó SET Jelszó = @pwd WHERE FelhasználóID = @id');
+
+        res.json({ message: 'Jelszó frissítve!' });
+    } catch (err) {
+        console.error("Reset error:", err);
+        res.status(400).json({ message: 'Érvénytelen vagy lejárt token.' });
+    }
+});
+
+// 🔄 Egyenleg lekérés és frissítés
 app.get('/api/userdata', authenticateToken, async (req, res) => {
     try {
         const pool = await sql.connect(dbConfig);
@@ -154,6 +223,7 @@ app.post('/api/userdata', authenticateToken, async (req, res) => {
     }
 });
 
+// 📈 Binance WebSocket kriptoárfolyamokhoz
 const symbols = ['btcusdt', 'ethusdt', 'dogeusdt', 'xrpusdt', 'trumpusdt', 'solusdt'];
 const streams = symbols.map(symbol => `${symbol}@trade`).join('/');
 const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
@@ -174,6 +244,7 @@ app.get('/api/live/:symbol', (req, res) => {
     }
 });
 
+// 📊 Részvényadatok
 const TWELVE_DATA_API_KEY = process.env.TWELVE_API_KEY;
 const stockSymbols = ['SPY', 'NVDA', 'MSFT'];
 
@@ -189,10 +260,12 @@ app.get('/api/stocks', async (req, res) => {
     }
 });
 
+// 🌐 Alapértelmezett oldal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Pages', 'auth', 'bejelentkezés.html'));
 });
 
+// 🚀 Szerver indítása
 app.listen(PORT, () => {
     console.log(`✅ Szerver fut: http://localhost:${PORT}`);
 });
