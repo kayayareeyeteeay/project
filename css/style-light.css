@@ -186,9 +186,40 @@ button {
     max-width: 600px;
 }
 
-.index-page .container {
-    max-width: 1140px;
+/* Kifejezetten az index.html oldalra (külön bodyIndex és index-page osztály kell hozzá) */
+body.index-page {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Navbar igazítás */
+  .index-page .navbar {
     margin: 0 auto;
+    padding: 0.5rem 1rem;
+  }
+  
+  /* Tartalom fixálás */
+  .index-page .container,
+  .index-page .container-navbar {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 20px;
+  }
+  
+  /* Szekciók is középen legyenek */
+  .index-page .szekciók {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  
+  /* Cikkek margó fixálás mobilon */
+  @media (max-width: 768px) {
+    .index-page .cikkek {
+      width: 100% !important;
+      margin: 10px auto;
+    }
   }
   
