@@ -70,33 +70,30 @@
   </div>
 
   <section class="szekciók container">
-    <h3>📰 Legfrissebb cikkek</h3>
-    <div class="row justify-content-center">
+    <h3 class="text-center">📰 Legfrissebb cikkek</h3>
+    <div class="d-flex flex-wrap justify-content-center gap-4">
       <!-- Cikk 1 -->
-      <div class="col-md-6 col-lg-4 mb-4">
-        <article class="cikkek h-100">
-          <img src="img/bitcoin-ingadozas.jpg" class="img-article" alt="bitcoin cikk">
-          <div class="cikk-tartalom p-3">
-            <h4>Miért ingadozik a Bitcoin ára?</h4>
-            <p>A Bitcoin árfolyamát rengeteg tényező befolyásolja, mint például a piaci hangulat, gazdasági hírek és technikai szintek...</p>
-            <footer><small>Publikálva: 2025.04.10. | Szerző: Alex bátyád</small></footer>
-          </div>
-        </article>
-      </div>
-
+      <article class="cikkek">
+        <img src="img/bitcoin-ingadozas.jpg" class="img-article" alt="bitcoin cikk">
+        <div class="cikk-tartalom p-3">
+          <h4>Miért ingadozik a Bitcoin ára?</h4>
+          <p>A Bitcoin árfolyamát rengeteg tényező befolyásolja, mint például a piaci hangulat, gazdasági hírek és technikai szintek...</p>
+          <footer><small>Publikálva: 2025.04.10. | Szerző: Alex bátyád</small></footer>
+        </div>
+      </article>
+  
       <!-- Cikk 2 -->
-      <div class="col-md-6 col-lg-4 mb-4">
-        <article class="cikkek h-100">
-          <img src="img/bitcoin-ingadozas.jpg" class="img-article" alt="portfólió cikk">
-          <div class="cikk-tartalom p-3">
-            <h4>Kezdőknek: Így állítsd össze első portfóliódat</h4>
-            <p>Alapvető lépések ahhoz, hogy megalapozott döntéseket hozz, és diverzifikált befektetési stratégiát építs...</p>
-            <footer><small>Publikálva: 2025.04.09. | Szerző: Alex bátyád</small></footer>
-          </div>
-        </article>
-      </div>
+      <article class="cikkek">
+        <img src="img/bitcoin-ingadozas.jpg" class="img-article" alt="portfólió cikk">
+        <div class="cikk-tartalom p-3">
+          <h4>Kezdőknek: Így állítsd össze első portfóliódat</h4>
+          <p>Alapvető lépések ahhoz, hogy megalapozott döntéseket hozz, és diverzifikált befektetési stratégiát építs...</p>
+          <footer><small>Publikálva: 2025.04.09. | Szerző: Alex bátyád</small></footer>
+        </div>
+      </article>
     </div>
   </section>
+  
 
   <script>
     const token = localStorage.getItem('token');
