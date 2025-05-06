@@ -1,7 +1,7 @@
 /* Sötét CSS */
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #121212; /* bézs háttér */
+    background-color: #121212;
     color: #ffffff;
     margin: 0;
     padding: 0;
@@ -15,12 +15,6 @@ body {
     padding: 0;
 }
 
-/* ez is lesz
-.logo{
-
-}
-*/
-
 /* Navbar */
 .navbar, .navbar a { 
     color: white;
@@ -29,7 +23,7 @@ body {
     text-decoration: none;
     margin: 10px auto;
 }
-.navbar a{
+.navbar a {
     transition: all 0.8s ease;
     border-radius: 5px;
 }
@@ -47,9 +41,10 @@ body {
     border-radius: 20px;
     box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
 }
+
 /* Sidebar */
 .sidebar-news {
-    position:fixed;
+    position: fixed;
     top: 20px;
     left: 10px;
     height: 900px;
@@ -63,11 +58,6 @@ body {
     border-radius: 20px;
 }
 
-/* most ez még nem
-.sidebar-news h4 {
-    font-size: ;
-}
-*/
 .sidebar-news ul {
     list-style: none;
     padding-left: 0;
@@ -78,7 +68,7 @@ body {
     font-size: 16px;
 }
 
-/*cikkek*/
+/* Cikkek */
 .szekciók {
     margin: 15px;
     background-color: #1e1e1e;
@@ -88,7 +78,7 @@ body {
 }
 
 .cikkek {
-    width: 700px ;
+    width: 700px;
     margin: 10px;
     background-color: #1e1e1e;
     border-radius: 20px;
@@ -101,7 +91,7 @@ body {
     transform: scale(1.02);
 }
 
-.cikkoldal{
+.cikkoldal {
     margin: 15px;
 }
 
@@ -122,12 +112,10 @@ body {
     margin-bottom: 10px;
 }
 
-
-
 /* Container */
-.container{
+.container {
     max-width: 1000px;
-    margin: 15px;
+    margin: 15px auto;
     padding: 20px;
     background-color: #1e1e1e;
     border-radius: 20px;
@@ -170,11 +158,11 @@ body {
     height: 2px;
     background-color: #00c3ff;
     transition: width 1s ease;
-  }
-  
-  .dropdown-menu a:hover::after {
+}
+
+.dropdown-menu a:hover::after {
     width: 100%;
-  }
+}
 
 /* Gombok */
 button {
@@ -188,6 +176,12 @@ button {
     transition: 0.3s;
 }
 
-  
-  
-  
+/* Középre igazított Chart */
+.chart-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    width: 100%;
+    max-width: 600px;
+}
