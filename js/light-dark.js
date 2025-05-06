@@ -17,6 +17,17 @@ function setTheme(theme) {
       setTheme(newTheme);
     };
   }
+
+  // 🌗 Navbar classok dinamikusan
+  const navbar = document.getElementById("main-navbar");
+  if (navbar) {
+    navbar.classList.remove("navbar-dark", "bg-dark", "navbar-light", "bg-light");
+    if (theme === "dark") {
+      navbar.classList.add("navbar-dark", "bg-dark");
+    } else {
+      navbar.classList.add("navbar-light", "bg-light");
+    }
+  }
 }
 
 function waitForElement(selector, callback) {
@@ -35,8 +46,6 @@ function waitForElement(selector, callback) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const currentTheme = localStorage.getItem("theme") || "dark";
-
-  // csak akkor állítjuk be, ha már létezik a gomb
   waitForElement("#theme-toggle", () => {
     setTheme(currentTheme);
   });
