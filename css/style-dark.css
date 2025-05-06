@@ -185,3 +185,9 @@ button {
     width: 100%;
     max-width: 600px;
 }
+.index-page .container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
