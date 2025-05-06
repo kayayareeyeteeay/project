@@ -203,12 +203,12 @@ button {
     display: block;
   }
  /* A Chart tényleges középre húzása az oszlopon belül */
-#btcChart {
+ #btcChart {
     display: block;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0 auto;
     max-width: 100%;
     height: auto;
   }
+  
   
   
