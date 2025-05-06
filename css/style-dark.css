@@ -8,38 +8,33 @@ body {
 }
 
 .bodyIndex {
-    font-family: 'Arial', sans-serif;
     background-color: #121212;
     color: #ffffff;
-    margin: 0px 0px 0px 255px;
+    margin: 0;
     padding: 0;
 }
 
 /* Navbar */
-.navbar, .navbar a { 
-    color: white;
+.navbar, .navbar a {
+    color: #ffffff !important;
     font-size: 18px;
-    padding: 15px;
     text-decoration: none;
-    margin: 10px auto;
 }
+
+.navbar {
+    background-color: #1e1e1e !important;
+    padding: 0.5rem 1rem;
+}
+
 .navbar a {
+    padding: 10px;
     transition: all 0.8s ease;
     border-radius: 5px;
 }
 
 .navbar a:hover {
-    color: #00c3ff;
+    color: #00c3ff !important;
     transform: translateX(10px);
-}
-
-.container-navbar {
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    background-color: #1e1e1e;
-    border-radius: 20px;
-    box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
 }
 
 /* Sidebar */
@@ -70,16 +65,17 @@ body {
 
 /* Cikkek */
 .szekciók {
-    margin: 15px;
+    margin: 15px auto;
     background-color: #1e1e1e;
     padding: 15px;
     border-radius: 20px;
     box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
+    max-width: 1100px;
 }
 
 .cikkek {
     width: 700px;
-    margin: 10px;
+    margin: 10px auto;
     background-color: #1e1e1e;
     border-radius: 20px;
     box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
@@ -114,23 +110,19 @@ body {
 
 /* Container */
 .container {
-    max-width: 1000px;
+    max-width: 1140px;
     margin: 15px auto;
     padding: 20px;
     background-color: #1e1e1e;
     border-radius: 20px;
-    box-shadow: 0px 0px 15px rgba(0, 195, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
 }
 
 /* Dropdown */
-.dropdown:hover .dropdown-menu {
-    display: block;
-}
-
 .dropdown-menu {
     background-color: #1e1e1e;
     border: none;
-    box-shadow: 0px 0px 15px rgba(0, 195, 255, 0.2);
+    box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);
 }
 
 .dropdown-menu a {
@@ -143,7 +135,7 @@ body {
 
 .dropdown-menu a:hover {
     background-color: rgba(0, 195, 255, 0.2);
-    color: #fff; 
+    color: #fff;
     border-radius: 5px;
     transition: all 0.8s ease;
 }
@@ -185,9 +177,15 @@ button {
     width: 100%;
     max-width: 600px;
 }
-.index-page .container {
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
+
+/* Responsiveness: Cikkek */
+@media (max-width: 768px) {
+    .cikkek {
+        width: 100% !important;
+        margin: 10px auto;
+    }
+
+    .sidebar-news {
+        display: none;
+    }
+}
