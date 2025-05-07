@@ -337,7 +337,7 @@ app.get('/api/live/:symbol', (req, res) => {
 });
 
 // 📊 Részvényadatok
-const TWELVE_DATA_API_KEY = process.env.TWELVE_API_KEY;
+const TWELVE_DATA_API_KEY = 'b6e3585ebb094839929ee2d793b8e45d';
 const stockSymbols = ['SPY', 'NVDA', 'MSFT'];
 app.get('/api/stocks', async (req, res) => {
     try {
