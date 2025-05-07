@@ -86,61 +86,63 @@
     }
 
     async function buyCrypto() {
-      const amount = parseFloat(document.getElementById("btcAmountInput").value);
-      const cost = currentBtcPrice * amount;
-      if (amount > 0 && balance >= cost) {
-        const res = await fetch("/api/transactions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            type: "crypto-buy",
-            amount,
-            crypto: "btcusdt",
-            currency,
-            price: currentBtcPrice
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          balance = data.balance;
-          btcAmount = data.crypto.btcusdt || 0;
-          updateDisplay();
-          document.getElementById("btcAmountInput").value = "";
-          updateCost();
-        }
-      }
+  const amount = parseFloat(document.getElementById("btcAmountInput").value);
+  const cost = currentBtcPrice * amount;
+  if (amount > 0 && balance >= cost) {
+    const res = await fetch("/api/transactions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        type: "crypto_buy", // ← FIXED HERE
+        amount,
+        crypto: "btcusdt",
+        currency,
+        price: currentBtcPrice
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      balance = data.balance;
+      btcAmount = data.crypto.btcusdt || 0;
+      updateDisplay();
+      document.getElementById("btcAmountInput").value = "";
+      updateCost();
     }
+  }
+}
 
-    async function sellCrypto() {
-      const amount = parseFloat(document.getElementById("btcAmountInput").value);
-      if (amount > 0 && btcAmount >= amount) {
-        const res = await fetch("/api/transactions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            type: "crypto-sell",
-            amount,
-            crypto: "btcusdt",
-            currency,
-            price: currentBtcPrice
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          balance = data.balance;
-          btcAmount = data.crypto.btcusdt || 0;
-          updateDisplay();
-          document.getElementById("btcAmountInput").value = "";
-          updateCost();
-        }
-      }
+
+async function sellCrypto() {
+  const amount = parseFloat(document.getElementById("btcAmountInput").value);
+  if (amount > 0 && btcAmount >= amount) {
+    const res = await fetch("/api/transactions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        type: "crypto_sell", // ← FIXED HERE
+        amount,
+        crypto: "btcusdt",
+        currency,
+        price: currentBtcPrice
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      balance = data.balance;
+      btcAmount = data.crypto.btcusdt || 0;
+      updateDisplay();
+      document.getElementById("btcAmountInput").value = "";
+      updateCost();
     }
+  }
+}
+
 
     async function resetCrypto() {
       const res = await fetch("/api/transactions", {
