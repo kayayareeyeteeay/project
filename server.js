@@ -283,12 +283,12 @@ app.post('/api/transactions', authenticateToken, async (req, res) => {
                 <li><strong>Új egyenleg:</strong> ${Egyenleg.toFixed(2)} USD</li>
             </ul>
         `;
-        await transporter.sendMail({
-            from:    `Fundelio <${process.env.EMAIL_USER}>`,
-            to:      req.user.email,
-            subject: `Tranzakció a fiókodban (#${txId})`,
-            html
-        });
+       // await transporter.sendMail({
+         //   from:    `Fundelio <${process.env.EMAIL_USER}>`,
+           // to:      req.user.email,
+            //subject: `Tranzakció a fiókodban (#${txId})`,
+            //html
+        //});
         res.status(201).json({ success: true, transactionId: txId, balance: Egyenleg, crypto: cryptoObj });
     } catch (err) {
         console.error('Tranzakciós hiba:', err);
