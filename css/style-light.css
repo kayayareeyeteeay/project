@@ -46,21 +46,22 @@ body {
     box-shadow: 0 0 15px rgba(192, 132, 12, 0.6);
 }
 
-/* Sidebar fix bal oldalra asztali nézetben */
+/* Sidebar (világos téma) */
 .sidebar-news {
     position: fixed;
-    top: 20px;
+    top: 80px; /* NAVBAR alá igazítva */
     left: 0;
     width: 240px;
-    height: calc(100vh - 40px);
-    background-color: #e0dacd; /* dark: #1e1e1e */
-    color: #111;               /* dark: #fff */
+    height: auto;
+    max-height: calc(100vh - 100px); /* ne lógjon túl az ablakból */
+    background-color: #e0dacd;
+    color: #111;
     padding: 20px;
     overflow-y: auto;
-    box-shadow: 0 0 15px rgba(192, 132, 12, 0.6); /* dark: rgba(0, 195, 255, 0.2) */
-    z-index: 1030;
+    box-shadow: 0 0 15px rgba(192, 132, 12, 0.6);
+    z-index: 1000;
     border-radius: 0 20px 20px 0;
-  }
+}
   
   /* Rejtsd el mobilon */
   @media (max-width: 992px) {
