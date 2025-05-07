@@ -25,15 +25,16 @@
     <h2 class="text-center mb-4">Ethereum Kereskedés</h2>
     <div class="row">
       <div class="col-12 col-md-6 mb-4">
-        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">10,000 USD</span></p>
-        <p id="ethPrice"><strong>ETH:</strong> N/A</p>
+        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">--</span></p>
+        <p><strong>ETH mennyiség:</strong> <span id="ethAmount">--</span></p>
+        <p><strong>Aktuális ár:</strong> <span id="ethPrice">--</span></p>
 
         <div class="mb-3">
-          <label for="ethAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+          <label for="ethAmountInput" class="form-label">Mennyit szeretnél vásárolni/eladni?</label>
           <input type="number" class="form-control" id="ethAmountInput" min="0" step="any" placeholder="ETH mennyiség" oninput="updateCost()">
         </div>
 
-        <p id="totalCost">Költség: N/A</p>
+        <p><strong>Költség:</strong> <span id="totalCost">--</span></p>
 
         <div class="d-grid gap-2">
           <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
@@ -49,109 +50,144 @@
   </div>
 
   <script>
-    let balance = 10000;
+    let balance = 0;
     let ethAmount = 0;
     let currentEthPrice = 0;
+    let currency = "USD";
+    const token = localStorage.getItem("token");
 
-    async function fetchCryptoPrice(symbol) {
-      try {
-        const response = await fetch(`/api/live/ethusdt`);
-        const data = await response.json();
-        return parseFloat(data.price);
-      } catch (error) {
-        console.error("API hiba:", error);
-        return null;
-      }
+    async function fetchUserData() {
+      const res = await fetch("/api/userdata", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      balance = data.balance;
+      currency = data.currency;
+      ethAmount = data.cryptoQuantity?.ethusdt || 0;
+      updateDisplay();
     }
 
-    let ethChart;
-    let ethPrices = [];
-    let labels = [];
+    function updateDisplay() {
+      document.getElementById("balance").innerText = `${balance.toFixed(2)} ${currency}`;
+      document.getElementById("ethAmount").innerText = ethAmount.toFixed(4);
+    }
 
-    async function updateChart() {
-      const price = await fetchCryptoPrice("ethusdt");
-      if (price !== null) {
-        currentEthPrice = price;
-        ethPrices.push(price);
-        labels.push(new Date().toLocaleTimeString());
+    async function fetchCryptoPrice() {
+      const res = await fetch("/api/live/ethusdt");
+      const data = await res.json();
+      currentEthPrice = parseFloat(data.price);
+      document.getElementById("ethPrice").innerText = `${currentEthPrice.toFixed(2)} ${currency}`;
+      updateCost();
+    }
 
-        if (ethPrices.length > 10) {
-          ethPrices.shift();
-          labels.shift();
+    function updateCost() {
+      const amount = parseFloat(document.getElementById("ethAmountInput").value) || 0;
+      const cost = currentEthPrice * amount;
+      document.getElementById("totalCost").innerText = `${cost.toFixed(2)} ${currency}`;
+    }
+
+    async function buyCrypto() {
+      const amount = parseFloat(document.getElementById("ethAmountInput").value);
+      const cost = currentEthPrice * amount;
+      if (amount > 0 && balance >= cost) {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            type: "Vétel",
+            amount,
+            crypto: "ethusdt",
+            currency,
+            price: currentEthPrice
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          ethAmount = data.crypto.ethusdt || 0;
+          updateDisplay();
+          document.getElementById("ethAmountInput").value = "";
+          updateCost();
         }
-
-        ethChart.data.labels = labels;
-        ethChart.data.datasets[0].data = ethPrices;
-        ethChart.update();
-        updateCost();
       }
     }
 
-    async function createChart() {
+    async function sellCrypto() {
+      const amount = parseFloat(document.getElementById("ethAmountInput").value);
+      if (amount > 0 && ethAmount >= amount) {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            type: "Eladás",
+            amount,
+            crypto: "ethusdt",
+            currency,
+            price: currentEthPrice
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          ethAmount = data.crypto.ethusdt || 0;
+          updateDisplay();
+          document.getElementById("ethAmountInput").value = "";
+          updateCost();
+        }
+      }
+    }
+
+    async function resetCrypto() {
+      balance = 10000;
+      ethAmount = 0;
+      updateDisplay();
+      updateCost();
+    }
+
+    function createChart() {
       const ctx = document.getElementById("ethChart").getContext("2d");
       ethChart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: labels,
+          labels: [],
           datasets: [{
-            label: "Ethereum árfolyam (USD)",
-            data: ethPrices,
+            label: "ETH árfolyam (USD)",
+            data: [],
             borderColor: "rgb(75, 192, 192)",
             fill: false
           }]
         },
         options: {
-          scales: {
-            y: {
-              beginAtZero: false
-            }
-          }
+          scales: { y: { beginAtZero: false } }
         }
       });
-      setInterval(updateChart, 5000);
     }
 
-    async function buyCrypto() {
-      const amount = parseFloat(document.getElementById("ethAmountInput").value);
-      if (currentEthPrice !== 0 && amount > 0 && balance >= currentEthPrice * amount) {
-        balance -= currentEthPrice * amount;
-        ethAmount += amount;
-        updateBalance();
+    async function updateChart() {
+      await fetchCryptoPrice();
+      const now = new Date().toLocaleTimeString();
+      ethPrices.push(currentEthPrice);
+      labels.push(now);
+      if (ethPrices.length > 10) {
+        ethPrices.shift();
+        labels.shift();
       }
-    }
-
-    async function sellCrypto() {
-      if (currentEthPrice !== 0 && ethAmount > 0) {
-        balance += currentEthPrice * ethAmount;
-        ethAmount = 0;
-        updateBalance();
-      }
-    }
-
-    function updateBalance() {
-      document.getElementById("balance").innerText = `${balance.toFixed(2)} USD`;
-      document.getElementById("ethPrice").innerText = `ETH: ${ethAmount.toFixed(4)}`;
-    }
-
-    function updateCost() {
-      const amount = parseFloat(document.getElementById("ethAmountInput").value);
-      if (currentEthPrice !== 0 && amount > 0) {
-        const cost = currentEthPrice * amount;
-        document.getElementById("totalCost").innerText = `Költség: ${cost.toFixed(2)} USD`;
-      } else {
-        document.getElementById("totalCost").innerText = "Költség: N/A";
-      }
-    }
-
-    function resetCrypto() {
-      balance = 10000;
-      ethAmount = 0;
-      updateBalance();
+      ethChart.data.labels = labels;
+      ethChart.data.datasets[0].data = ethPrices;
+      ethChart.update();
     }
 
     window.onload = async () => {
-      updateBalance();
+      await fetchUserData();
       createChart();
+      updateChart();
+      setInterval(updateChart, 5000);
     };
   </script>
 
