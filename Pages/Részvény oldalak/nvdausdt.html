@@ -24,13 +24,14 @@
     <h2 class="text-center mb-4">NVDA Kereskedés</h2>
     <div class="row">
       <div class="col-12 col-md-6 mb-4">
-        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">10,000 USD</span></p>
-        <p id="assetAmount"><strong>NVDA:</strong> N/A</p>
+        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">--</span></p>
+        <p><strong>NVDA mennyiség:</strong> <span id="assetAmount">--</span></p>
+        <p><strong>Aktuális ár:</strong> <span id="currentPrice">--</span></p>
         <div class="mb-3">
-          <label for="amountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+          <label for="amountInput" class="form-label">Mennyit szeretnél vásárolni/eladni?</label>
           <input type="number" class="form-control" id="amountInput" min="0" step="any" placeholder="Mennyiség" oninput="updateCost()">
         </div>
-        <p id="totalCost">Költség: N/A</p>
+        <p><strong>Költség:</strong> <span id="totalCost">--</span></p>
         <div class="d-grid gap-2">
           <button class="btn btn-primary" onclick="buyAsset()">Vásárlás</button>
           <button class="btn btn-danger" onclick="sellAsset()">Eladás</button>
@@ -44,44 +45,32 @@
   </div>
 
   <script>
-    let balance = 10000;
+    let balance = 0;
     let assetAmount = 0;
     let currentPrice = 0;
     let currency = "USD";
-    const assetSymbol = 'NVDA';
+    const assetSymbol = 'MSFT';
+    const token = localStorage.getItem("token");
+    let assetChart;
+    let prices = [];
+    let labels = [];
 
-    async function fetchGlobals() {
-      try {
-        const response = await fetch('/api/globals');
-        const data = await response.json();
-        if (data.currency) currency = data.currency;
-        if (data.stockQuantity?.[assetSymbol]) {
-          assetAmount = parseFloat(data.stockQuantity[assetSymbol]) || 0;
-        }
-        updateBalance();
-      } catch (error) {
-        console.error("Globális érték hiba:", error);
-      }
+    async function fetchUserData() {
+      const res = await fetch("/api/userdata", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      balance = data.balance;
+      currency = data.currency;
+      assetAmount = data.stockQuantity?.[assetSymbol] || 0;
+      updateBalance();
     }
 
-    async function updateGlobalAssetQuantity() {
-      const payload = { stockQuantity: { [assetSymbol]: assetAmount } };
-      try {
-        await fetch('/api/globals', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-      } catch (error) {
-        console.error("Frissítési hiba:", error);
-      }
-    }
-
-    async function fetchAssetPrice(symbol) {
+    async function fetchAssetPrice() {
       try {
         const response = await fetch(`/api/stocks`);
         const data = await response.json();
-        const assetData = data.find(item => item.symbol.toLowerCase() === symbol.toLowerCase());
+        const assetData = data.find(item => item.symbol.toLowerCase() === assetSymbol.toLowerCase());
         return assetData ? parseFloat(assetData.price) : null;
       } catch (error) {
         console.error("Ár lekérési hiba:", error);
@@ -89,14 +78,11 @@
       }
     }
 
-    let assetChart;
-    let prices = [];
-    let labels = [];
-
     async function updateChart() {
-      const price = await fetchAssetPrice(assetSymbol);
+      const price = await fetchAssetPrice();
       if (price !== null) {
         currentPrice = price;
+        document.getElementById("currentPrice").innerText = `${currentPrice.toFixed(2)} ${currency}`;
         prices.push(price);
         labels.push(new Date().toLocaleTimeString());
         if (prices.length > 10) {
@@ -116,7 +102,7 @@
         data: {
           labels,
           datasets: [{
-            label: `NVDA árfolyam (${currency})`,
+            label: `MSFT árfolyam (${currency})`,
             data: prices,
             borderColor: 'rgb(75, 192, 192)',
             fill: false
@@ -135,20 +121,58 @@
 
     async function buyAsset() {
       const amount = parseFloat(document.getElementById('amountInput').value);
-      if (currentPrice && balance >= currentPrice * amount && amount > 0) {
-        balance -= currentPrice * amount;
-        assetAmount += amount;
-        updateBalance();
-        await updateGlobalAssetQuantity();
+      const cost = currentPrice * amount;
+      if (amount > 0 && balance >= cost) {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            type: "Vétel",
+            amount,
+            crypto: assetSymbol,
+            currency,
+            price: currentPrice
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          assetAmount = data.stock[assetSymbol] || 0;
+          updateBalance();
+          document.getElementById("amountInput").value = "";
+          updateCost();
+        }
       }
     }
 
     async function sellAsset() {
-      if (currentPrice && assetAmount > 0) {
-        balance += currentPrice * assetAmount;
-        assetAmount = 0;
-        updateBalance();
-        await updateGlobalAssetQuantity();
+      const amount = parseFloat(document.getElementById('amountInput').value);
+      if (amount > 0 && assetAmount >= amount) {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            type: "Eladás",
+            amount,
+            crypto: assetSymbol,
+            currency,
+            price: currentPrice
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          assetAmount = data.stock[assetSymbol] || 0;
+          updateBalance();
+          document.getElementById("amountInput").value = "";
+          updateCost();
+        }
       }
     }
 
@@ -156,22 +180,22 @@
       balance = 10000;
       assetAmount = 0;
       updateBalance();
-      await updateGlobalAssetQuantity();
+      updateCost();
     }
 
     function updateBalance() {
       document.getElementById('balance').innerText = `${balance.toFixed(2)} ${currency}`;
-      document.getElementById('assetAmount').innerText = `NVDA: ${assetAmount.toFixed(4)}`;
+      document.getElementById('assetAmount').innerText = `${assetSymbol}: ${assetAmount.toFixed(4)}`;
     }
 
     function updateCost() {
       const amount = parseFloat(document.getElementById('amountInput').value);
-      const cost = amount > 0 ? currentPrice * amount : null;
-      document.getElementById('totalCost').innerText = cost ? `Költség: ${cost.toFixed(2)} ${currency}` : "Költség: N/A";
+      const cost = amount > 0 ? currentPrice * amount : 0;
+      document.getElementById('totalCost').innerText = `Költség: ${cost.toFixed(2)} ${currency}`;
     }
 
     window.onload = async () => {
-      await fetchGlobals();
+      await fetchUserData();
       createChart();
     };
   </script>
