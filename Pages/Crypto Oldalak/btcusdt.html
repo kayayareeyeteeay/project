@@ -32,14 +32,14 @@
           <input type="number" class="form-control" id="btcAmountInput" min="0" step="any" placeholder="BTC mennyiség" oninput="updateCost()">
         </div>
         <p><strong>Költség:</strong> <span id="totalCost">--</span></p>
-        <div class="d-grid gap-2">
-          <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
-          <button class="btn btn-danger" onclick="sellCrypto()">Eladás</button>
+        <div class="d-grid gap-2 d-md-block">
+          <button class="btn btn-primary me-2" onclick="buyCrypto()">Vásárlás</button>
+          <button class="btn btn-danger me-2" onclick="sellCrypto()">Eladás</button>
           <button class="btn btn-secondary" onclick="resetCrypto()">Újraindítás</button>
         </div>
       </div>
-      <div class="col-md-6">
-        <canvas id="btcChart" style="max-height: 300px;"></canvas>
+      <div class="col-md-6 d-flex justify-content-center align-items-center">
+        <canvas id="btcChart" style="max-height: 300px; width: 100%;"></canvas>
       </div>
     </div>
   </div>
@@ -49,8 +49,10 @@
     let btcAmount = 0;
     let currentBtcPrice = 0;
     let currency = "USD";
-    let priceHistory = [];
     const token = localStorage.getItem("token");
+    let btcChart;
+    let btcPrices = [];
+    let labels = [];
 
     async function fetchUserData() {
       const res = await fetch("/api/userdata", {
@@ -61,6 +63,7 @@
       currency = data.currency;
       btcAmount = data.cryptoQuantity?.btcusdt || 0;
       updateDisplay();
+      await fetchCryptoPrice();
     }
 
     async function fetchCryptoPrice() {
@@ -68,6 +71,8 @@
       const data = await res.json();
       currentBtcPrice = parseFloat(data.price);
       document.getElementById("btcPrice").innerText = `${currentBtcPrice.toFixed(2)} ${currency}`;
+      updateCost();
+      updateChart();
     }
 
     function updateDisplay() {
@@ -93,9 +98,9 @@
           },
           body: JSON.stringify({
             type: "crypto-buy",
-            amount: amount,
+            amount,
             crypto: "btcusdt",
-            currency: currency,
+            currency,
             price: currentBtcPrice
           })
         });
@@ -119,9 +124,9 @@
           },
           body: JSON.stringify({
             type: "crypto-sell",
-            amount: amount,
+            amount,
             crypto: "btcusdt",
-            currency: currency,
+            currency,
             price: currentBtcPrice
           })
         });
@@ -154,35 +159,30 @@
       updateCost();
     }
 
-    let btcChart;
-    let btcPrices = [];
-    let labels = [];
-
     function createChart() {
       const ctx = document.getElementById("btcChart").getContext("2d");
       btcChart = new Chart(ctx, {
         type: "line",
         data: {
           labels: [],
-          datasets: [
-            {
-              label: "BTC árfolyam (USD)",
-              data: [],
-              borderColor: "rgb(75, 192, 192)",
-              fill: false
-            }
-          ]
+          datasets: [{
+            label: "BTC árfolyam (USD)",
+            data: [],
+            borderColor: "rgb(75, 192, 192)",
+            fill: false
+          }]
         },
         options: {
           scales: {
-            y: { beginAtZero: false }
+            y: {
+              beginAtZero: false
+            }
           }
         }
       });
     }
 
-    async function updateChart() {
-      await fetchCryptoPrice();
+    function updateChart() {
       const now = new Date().toLocaleTimeString();
       btcPrices.push(currentBtcPrice);
       labels.push(now);
@@ -196,10 +196,9 @@
     }
 
     window.onload = async () => {
-      await fetchUserData();
       createChart();
-      await updateChart();
-      setInterval(updateChart, 5000);
+      await fetchUserData();
+      setInterval(fetchCryptoPrice, 5000);
     };
   </script>
 </body>
