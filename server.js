@@ -55,7 +55,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// 🔐 Regisztráció e-mail küldéssel + kezdő egyenleg beállítása
+//Regisztráció kezdő egyenleg beállítása
 app.post('/api/register', async (req, res) => {
     const { name, email, password } = req.body;
     try {
@@ -99,7 +99,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// 🔐 Bejelentkezés (JWT-be email is kerül)
+// Bejelentkezés
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -125,51 +125,6 @@ app.post('/api/login', async (req, res) => {
     } catch (err) {
         console.error('Bejelentkezési hiba:', err);
         res.status(500).json({ message: 'Szerverhiba bejelentkezés közben.' });
-    }
-});
-
-// 🔁 Elfelejtett jelszó – email küldés
-app.post('/api/forgot-password', async (req, res) => {
-    const { email } = req.body;
-    try {
-        const pool = await sql.connect(dbConfig);
-        const result = await pool.request()
-            .input('email', sql.NVarChar, email)
-            .query('SELECT FelhasználóID, Név FROM Felhasználó WHERE Email = @email');
-        if (result.recordset.length === 0) {
-            return res.status(404).json({ message: 'Nem található ilyen e-mail.' });
-        }
-        const user = result.recordset[0];
-        const resetToken = jwt.sign({ id: user.FelhasználóID }, SECRET_KEY, { expiresIn: '15m' });
-        const resetLink = `https://fundelio.hu/reset-password.html?token=${resetToken}`;
-        await transporter.sendMail({
-            from: `Fundelio <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: "Jelszó visszaállítás - Fundelio",
-            html: `<h2>Szia ${user.Név}!</h2><p>Kattints a linkre, hogy új jelszót állíts be:</p><a href="${resetLink}">${resetLink}</a>`
-        });
-        res.json({ message: 'E-mail elküldve.' });
-    } catch (err) {
-        console.error("Forgot password error:", err);
-        res.status(500).json({ message: 'Hiba történt.' });
-    }
-});
-
-// 🔁 Jelszó újraállítás tokennel
-app.post('/api/reset-password', async (req, res) => {
-    const { token, newPassword } = req.body;
-    try {
-        const decoded = jwt.verify(token, SECRET_KEY);
-        const hashed = await bcrypt.hash(newPassword, 10);
-        const pool = await sql.connect(dbConfig);
-        await pool.request()
-            .input('id', sql.Int, decoded.id)
-            .input('pwd', sql.NVarChar, hashed)
-            .query('UPDATE Felhasználó SET Jelszó = @pwd WHERE FelhasználóID = @id');
-        res.json({ message: 'Jelszó frissítve!' });
-    } catch (err) {
-        console.error("Reset error:", err);
-        res.status(400).json({ message: 'Érvénytelen vagy lejárt token.' });
     }
 });
 
@@ -200,7 +155,7 @@ app.get('/api/userdata', authenticateToken, async (req, res) => {
     }
 });
 
-// 🌟 Új: Tranzakciók kezelése, egyenleg- és kriptofrissítés
+//Tranzakciók kezelése, egyenleg- és kriptofrissítés
 app.post('/api/transactions', authenticateToken, async (req, res) => {
     const { type, amount, currency, crypto, price } = req.body;
     try {
@@ -264,24 +219,6 @@ app.post('/api/transactions', authenticateToken, async (req, res) => {
                      CryptoMennyiség = @crypto
                  WHERE FelhasználóID = @uid`
             );
-        // 5) E-mail értesítés
-        const html = `
-            <h2>Szia!</h2>
-            <p>Új tranzakció történt a fiókodban (#${txId}):</p>
-            <ul>
-                <li><strong>Típus:</strong> ${type}</li>
-                <li><strong>Összeg:</strong> ${amount} ${currency || 'USD'}</li>
-                ${crypto ? `<li><strong>Kripto:</strong> ${crypto}</li>` : ''}
-                ${price  ? `<li><strong>Ár:</strong> ${price}</li>` : ''}
-                <li><strong>Új egyenleg:</strong> ${Egyenleg.toFixed(2)} USD</li>
-            </ul>
-        `;
-       // await transporter.sendMail({
-         //   from:    `Fundelio <${process.env.EMAIL_USER}>`,
-           // to:      req.user.email,
-            //subject: `Tranzakció a fiókodban (#${txId})`,
-            //html
-        //});
         res.status(201).json({ success: true, transactionId: txId, balance: Egyenleg, crypto: cryptoObj });
     } catch (err) {
         console.error('Tranzakciós hiba:', err);

@@ -11,69 +11,73 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bodyIndex">
-  <nav class="navbar navbar-expand-lg">
-    <div class="container-navbar d-flex justify-content-between align-items-center">
-        <ul class="navbar-nav flex-row">
-            <li class="nav-item me-3"><a href="/index.html" class="nav-link">Főoldal</a></li>
-            <li class="nav-item me-3"><a href="/profil.html" class="nav-link">Profil</a></li>
-            <li class="nav-item dropdown me-3">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Cryptok</a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/btcusdt.html">Bitcoin</a></li>
-                    <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/dogeusdt.html">Dogecoin</a></li>
-                    <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/ethusdt.html">Ethereum</a></li>
-                    <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/solusdt.html">Solana</a></li>
-                    <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/trumpusdt.html">Trumpcoin</a></li>
-                    <li><a class="dropdown-item" href="/Pages/Crypto Oldalak/xrpusdt.html">XRP</a></li>
-                </ul>
-            </li>
-            <li class="nav-item dropdown me-3">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Részvények</a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/Pages/Részvény oldalak/spyusdt.html">Spy</a></li>
-                </ul>
-            </li>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Fundelio</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.html">Főoldal</a></li>
+          <li class="nav-item"><a class="nav-link" href="profil.html">Profil</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Cryptok</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/Crypto%20Oldalak/btcusdt.html">Bitcoin</a></li>
+              <li><a class="dropdown-item" href="/Crypto%20Oldalak/dogeusdt.html">Dogecoin</a></li>
+              <li><a class="dropdown-item" href="/Crypto%20Oldalak/ethusdt.html">Ethereum</a></li>
+              <li><a class="dropdown-item" href="/Crypto%20Oldalak/solusdt.html">Solana</a></li>
+              <li><a class="dropdown-item" href="/Crypto%20Oldalak/trumpusdt.html">Trumpcoin</a></li>
+              <li><a class="dropdown-item" href="/Crypto%20Oldalak/xrpusdt.html">XRP</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Részvények</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/Részvény%20oldalak/spyusdt.html">SPY</a></li>
+              <li><a class="dropdown-item" href="/Részvény%20oldalak/msftusdt.html">MSFT</a></li>
+              <li><a class="dropdown-item" href="/Részvény%20oldalak/nvdausdt.html">NVDA</a></li>
+            </ul>
+          </li>
         </ul>
-
-        <div class="text-center" style="margin: 0px 250px 0px 0px">
-            <h1 class="mb-0">Üdvözöl a Fundelio!</h1>
-            <p class="mb-0">Játssz, fektess be, és irányítsd a közösséget.</p>
-        </div>
-
-        <div>
-            <button id="theme-toggle" class="btn btn-sm btn-outline-light">🌙 / ☀️</button>
-        </div>
+        <button id="theme-toggle" class="btn btn-sm btn-outline-light ms-auto">🌙 / ☀️</button>
+      </div>
     </div>
-</nav>
+  </nav>
   <article class="cikkoldal">
-    <img src="/img/portfolio-kezdoknek.jpg" class="img-article" alt="Portfólió">
+    <img src="/img/portfolio kép.png" class="img-article" alt="Portfólió">
     <div class="cikk-tartalom p-3">
       <h2>Kezdőknek: Így állítsd össze első portfóliódat </h2>
       <p>
-        Ha most vágsz bele a befektetés világába, az első és legfontosabb lépés a megfelelő portfólió kialakítása. Ez a befektetéseid összetétele – vagyis, hogy milyen arányban tartasz különböző eszközöket.
+        Portfóliót összeállítani nem hasraütéses játék. Határozd meg: mi a célod? Lakásra gyűjtesz? Nyugdíjra? Rövid távú nyereséget keresel?
+        A tudatos befektetés három alappillére a diverzifikáció, a stratégia és az érzelemmentesség.
       </p>
 
-      <h4>1. Kezdj biztonságosan</h4>
+      <h4>1. Diverzifikáció – Ne tedd egy lapra az egészet!</h4>
       <p>
-        Első lépésként ne tedd minden pénzed kriptóba vagy részvénybe! Használj szimulációt (mint a Fundelio), és figyeld meg a piac mozgását. A portfóliód lehet például: 50% stabilabb részvények, 30% kriptó, 20% készpénz tartalék.
+        Kezdőként ne költsd el minden pénzed egyetlen coinra. Ossz szét különböző kategóriák között: stabil nagyok, növekedési altcoinok, és stabilcoinok.
       </p>
 
-      <h4>2. Diverzifikálj!</h4>
+      <h4>2. Stratégia – Tudd, mi a célod</h4>
       <p>
-        Ne csak egyetlen coinra vagy részvényre fogadj! Ha az egyik veszít az értékéből, a többi még mentheti a helyzetet. Ez a diverzifikáció lényege.
+        Például: 1000 USD-ből 1 BTC-re, 2 ETH-ra, 15 SOL-ra, 150 USDC-re, 100 egy kis kockázatú altcoinra.
       </p>
 
-      <h4>3. Ne ess pánikba!</h4>
+      <h4>3. Tudatosság – Ne hagyd, hogy az érzelmeid irányítsanak</h4>
       <p>
-        A piac természetes módon ingadozik. Ha hirtelen esést látsz, az nem feltétlenül jelenti, hogy el kell adnod. Tervezz hosszabb távra, és ne impulzívan cselekedj.
+        Ne kereskedj félelemből vagy kapzsiságból. Kövesd a stratégiád, és dokumentáld a lépéseidet!
       </p>
 
-      <h4>4. Kövesd nyomon a hozamot</h4>
+      <h4>Fiktív példa</h4>
       <p>
-        A Fundelio lehetőséget ad, hogy szimulált környezetben láthasd, hogyan alakulna a portfóliód. Ez segít a valóságos befektetésekre való felkészülésben.
+        Egy képzeletbeli kezdő így osztja szét a befektetését: BTC 40%, ETH 20%, SOL 15%, XRP 15%,  DOGE 10%.
+        <br>
+        Az első portfóliód lehet billegős indulás, de idővel magabiztos befektető válhat belőled, ha okosan és megfontoltan építkezel. 
       </p>
 
-      <footer><small>Publikálva: 2025.04.09. | Szerző: Alex bátyád</small></footer>
+      <footer><small>Publikálva: 2025.04.09. | Szerző: Alex</small></footer>
       <br>
       <a href="/index.html" class="btn btn-sm btn-outline-dark">⬅️ Vissza a főoldalra</a>
       
