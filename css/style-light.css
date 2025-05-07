@@ -26,6 +26,7 @@ body {
     color: #000;
     box-shadow: 0 0 15px rgba(192, 132, 12, 0.3);
     z-index: 1040;
+    position: relative;
   }
   
   .navbar a {
@@ -46,7 +47,7 @@ body {
   /* ✅ SIDEBAR */
   .sidebar-news {
     position: fixed;
-    top: 70px; /* navbar height után */
+    top: 70px; /* navbar height */
     left: 10px;
     width: 240px;
     max-height: calc(100vh - 80px);
