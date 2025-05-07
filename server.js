@@ -324,6 +324,7 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
         console.error('Lekérdezési hiba:', err);
         res.status(500).json({ message: 'Hiba a tranzakciók lekérésekor.' });
     }
+    console.log("Kapott tranzakció:", { type, amount, price, crypto, currency });
 });
 
 // 📈 Binance WebSocket kriptoárfolyamokhoz
