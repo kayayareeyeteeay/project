@@ -242,21 +242,14 @@ app.post('/api/transactions', authenticateToken, async (req, res) => {
         let cryptoObj = JSON.parse(CryptoMennyiség || '{}');
         // 3) Egyenleg módosítása típus szerint
         switch (type) {
-            case 'deposit':
-                Egyenleg += amount;
-                break;
-            case 'withdraw':
-                if (Egyenleg < amount) return res.status(400).json({ message: 'Nincs elég egyenleg.' });
-                Egyenleg -= amount;
-                break;
-            case 'crypto-buy': {
+            case 'Vétel': {
                 const cost = amount * price;
                 if (Egyenleg < cost) return res.status(400).json({ message: 'Nincs elég USD kriptó vásárláshoz.' });
                 Egyenleg -= cost;
                 cryptoObj[crypto] = (cryptoObj[crypto] || 0) + amount;
                 break;
             }
-            case 'crypto-sell': {
+            case 'Eladás': {
                 if ((cryptoObj[crypto] || 0) < amount) return res.status(400).json({ message: 'Nincs elég kriptód eladásra.' });
                 const proceeds = amount * price;
                 Egyenleg += proceeds;
@@ -266,6 +259,7 @@ app.post('/api/transactions', authenticateToken, async (req, res) => {
             default:
                 return res.status(400).json({ message: 'Ismeretlen tranzakciótípus.' });
         }
+
         // 4) Egyenleg frissítése adatbázisban
         await pool.request()
             .input('uid',     sql.Int,      req.user.id)
