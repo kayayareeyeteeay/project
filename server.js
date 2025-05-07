@@ -92,13 +92,6 @@ app.post('/api/register', async (req, res) => {
                  (FelhasználóID, Egyenleg, Deviza, CryptoMennyiség, RészvényMennyiség)
                  VALUES(@id, @balance, @currency, @crypto, @stocks)`
             );
-        // Üdvözlő e-mail
-        await transporter.sendMail({
-            from: `Fundelio <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: "Sikeres regisztráció - Fundelio",
-            html: `<h2>Kedves ${name}!</h2><p>Köszönjük, hogy regisztráltál a Fundeliora.</p><p>Most már be tudsz jelentkezni.</p>`
-        });
         res.status(201).json({ message: 'Sikeres regisztráció!' });
     } catch (err) {
         console.error('Regisztrációs hiba:', err);
