@@ -186,7 +186,7 @@
     window.onload = async () => {
       await fetchUserData();
       createChart();
-      updateChart();
+      await updateChart();
       setInterval(updateChart, 100000);
     };
   </script>

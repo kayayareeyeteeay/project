@@ -20,34 +20,14 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="index.html">Főoldal</a></li>
-          <li class="nav-item"><a class="nav-link" href="profil.html">Profil</a></li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Cryptok</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/btcusdt.html">Bitcoin</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/dogeusdt.html">Dogecoin</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/ethusdt.html">Ethereum</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/solusdt.html">Solana</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/trumpusdt.html">Trumpcoin</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/xrpusdt.html">XRP</a></li>
-            </ul>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Részvények</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/Részvény%20oldalak/spyusdt.html">SPY</a></li>
-              <li><a class="dropdown-item" href="/Részvény%20oldalak/msftusdt.html">MSFT</a></li>
-              <li><a class="dropdown-item" href="/Részvény%20oldalak/nvdausdt.html">NVDA</a></li>
-            </ul>
-          </li>
-        </ul>
-        <button id="theme-toggle" class="btn btn-sm btn-outline-light ms-auto">🌙 / ☀️</button>
-      </div>
-    </div>
-  </nav>
+      <div id="navbar-container"></div>
+      <script>
+        fetch("/common/navbar.html")
+          .then(res => res.text())
+          .then(data => {
+            document.getElementById("navbar-container").innerHTML = data;
+          });
+      </script>
 
   <!-- PAGE LAYOUT: SIDEBAR + TARTALOM -->
   <div class="d-lg-flex">

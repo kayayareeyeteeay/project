@@ -18,32 +18,14 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse justify-content-between" id="navbarContent">
-        <ul class="navbar-nav mb-2 mb-lg-0">
-          <li class="nav-item"><a href="index.html" class="nav-link">Főoldal</a></li>
-          <li class="nav-item"><a href="profil.html" class="nav-link">Profil</a></li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Kriptók</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/btcusdt.html">Bitcoin</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/dogeusdt.html">Dogecoin</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/ethusdt.html">Ethereum</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/solusdt.html">Solana</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/trumpusdt.html">Trumpcoin</a></li>
-              <li><a class="dropdown-item" href="/Crypto%20Oldalak/xrpusdt.html">XRP</a></li>
-            </ul>
-          </li>
-        </ul>
-
-        <div class="d-flex flex-column align-items-end text-end ms-auto me-3">
-          <h1 class="h4 text-white mb-0">Profilod</h1>
-          <p class="text-white-50 mb-0 small">Itt láthatod az adataid és elért eredményeid</p>
-        </div>
-
-        <button id="theme-toggle" class="btn btn-sm btn-outline-light ms-2">🌙 / ☀️</button>
-      </div>
-    </div>
-  </nav>
+      <div id="navbar-container"></div>
+  <script>
+    fetch("/common/navbar.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("navbar-container").innerHTML = data;
+      });
+  </script>
 
   <div class="container mt-4">
     <h2 class="text-center mb-4">Profilod</h2>
