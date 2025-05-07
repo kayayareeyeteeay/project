@@ -96,7 +96,7 @@
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
-        type: "crypto_buy", // ← FIXED HERE
+        type: "Vétel", // ← FIXED HERE
         amount,
         crypto: "btcusdt",
         currency,
@@ -125,7 +125,7 @@ async function sellCrypto() {
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
-        type: "crypto_sell", // ← FIXED HERE
+        type: "Eladás", // ← FIXED HERE
         amount,
         crypto: "btcusdt",
         currency,
