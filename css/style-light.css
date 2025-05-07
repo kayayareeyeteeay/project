@@ -1,4 +1,4 @@
-/* 🌞 Világos téma - Responsive sidebar + navbar */
+/* 🌞 Világos téma - Navbar alatti sidebar */
 
 body {
     font-family: 'Arial', sans-serif;
@@ -16,7 +16,7 @@ body {
   
   @media (min-width: 993px) {
     .bodyIndex {
-      margin-left: 260px; /* A sidebar szélessége miatt */
+      margin-left: 260px;
     }
   }
   
@@ -26,6 +26,7 @@ body {
     color: #000;
     box-shadow: 0 0 15px rgba(192, 132, 12, 0.3);
     z-index: 1040;
+    height: 80px;
     position: relative;
   }
   
@@ -47,17 +48,17 @@ body {
   /* ✅ SIDEBAR */
   .sidebar-news {
     position: fixed;
-    top: 70px; /* navbar height */
-    left: 10px;
+    top: 80px;
+    left: 0;
     width: 240px;
-    max-height: calc(100vh - 80px);
+    max-height: calc(100vh - 90px);
     background-color: #e0dacd;
     color: #111;
     padding: 20px;
     overflow-y: auto;
     box-shadow: 0 0 15px rgba(192, 132, 12, 0.6);
-    z-index: 1030;
-    border-radius: 20px;
+    z-index: 1000;
+    border-radius: 0 20px 20px 0;
   }
   
   /* Mobilon rejtve */
