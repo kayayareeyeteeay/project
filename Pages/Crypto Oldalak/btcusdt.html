@@ -98,7 +98,8 @@
     }
 
     async function buyCrypto() {
-  const amount = parseFloat(document.getElementById("btcAmountInput").value);
+      console.log("valami")
+      const amount = parseFloat(document.getElementById("btcAmountInput").value);
   const cost = currentBtcPrice * amount;
   if (amount > 0 && balance >= cost) {
     const res = await fetch("/api/transactions", {
