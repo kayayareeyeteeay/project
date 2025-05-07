@@ -25,15 +25,16 @@
     <h2 class="text-center mb-4">TrumpCoin Kereskedés</h2>
     <div class="row">
       <div class="col-12 col-md-6 mb-4">
-        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">10,000 USD</span></p>
-        <p id="trumpPrice"><strong>TRUMP:</strong> N/A</p>
+        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">--</span></p>
+        <p><strong>TRUMP mennyiség:</strong> <span id="trumpAmount">--</span></p>
+        <p><strong>Aktuális ár:</strong> <span id="trumpPrice">--</span></p>
 
         <div class="mb-3">
-          <label for="trumpAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+          <label for="trumpAmountInput" class="form-label">Mennyit szeretnél vásárolni/eladni?</label>
           <input type="number" class="form-control" id="trumpAmountInput" min="0" step="any" placeholder="TRUMP mennyiség" oninput="updateCost()">
         </div>
 
-        <p id="totalCost">Költség: N/A</p>
+        <p><strong>Költség:</strong> <span id="totalCost">--</span></p>
 
         <div class="d-grid gap-2">
           <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
@@ -49,109 +50,144 @@
   </div>
 
   <script>
-    let balance = 10000;
+    let balance = 0;
     let trumpAmount = 0;
     let currentTrumpPrice = 0;
+    let currency = "USD";
+    const token = localStorage.getItem("token");
+
+    async function fetchUserData() {
+      const res = await fetch("/api/userdata", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      balance = data.balance;
+      currency = data.currency;
+      trumpAmount = data.cryptoQuantity?.trumpusdt || 0;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      document.getElementById("balance").innerText = `${balance.toFixed(2)} ${currency}`;
+      document.getElementById("trumpAmount").innerText = trumpAmount.toFixed(4);
+    }
 
     async function fetchCryptoPrice() {
-      try {
-        const response = await fetch(`/api/live/trumpusdt`);
-        const data = await response.json();
-        return parseFloat(data.price);
-      } catch (error) {
-        console.error("API hiba:", error);
-        return null;
-      }
+      const res = await fetch("/api/live/trumpusdt");
+      const data = await res.json();
+      currentTrumpPrice = parseFloat(data.price);
+      document.getElementById("trumpPrice").innerText = `${currentTrumpPrice.toFixed(4)} ${currency}`;
+      updateCost();
     }
 
-    let trumpChart;
-    let trumpPrices = [];
-    let labels = [];
+    function updateCost() {
+      const amount = parseFloat(document.getElementById("trumpAmountInput").value) || 0;
+      const cost = currentTrumpPrice * amount;
+      document.getElementById("totalCost").innerText = `${cost.toFixed(2)} ${currency}`;
+    }
 
-    async function updateChart() {
-      const price = await fetchCryptoPrice();
-      if (price !== null) {
-        currentTrumpPrice = price;
-        trumpPrices.push(price);
-        labels.push(new Date().toLocaleTimeString());
-
-        if (trumpPrices.length > 10) {
-          trumpPrices.shift();
-          labels.shift();
+    async function buyCrypto() {
+      const amount = parseFloat(document.getElementById("trumpAmountInput").value);
+      const cost = currentTrumpPrice * amount;
+      if (amount > 0 && balance >= cost) {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            type: "Vétel",
+            amount,
+            crypto: "trumpusdt",
+            currency,
+            price: currentTrumpPrice
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          trumpAmount = data.crypto.trumpusdt || 0;
+          updateDisplay();
+          document.getElementById("trumpAmountInput").value = "";
+          updateCost();
         }
-
-        trumpChart.data.labels = labels;
-        trumpChart.data.datasets[0].data = trumpPrices;
-        trumpChart.update();
-        updateCost();
       }
     }
 
-    async function createChart() {
+    async function sellCrypto() {
+      const amount = parseFloat(document.getElementById("trumpAmountInput").value);
+      if (amount > 0 && trumpAmount >= amount) {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            type: "Eladás",
+            amount,
+            crypto: "trumpusdt",
+            currency,
+            price: currentTrumpPrice
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          trumpAmount = data.crypto.trumpusdt || 0;
+          updateDisplay();
+          document.getElementById("trumpAmountInput").value = "";
+          updateCost();
+        }
+      }
+    }
+
+    async function resetCrypto() {
+      balance = 10000;
+      trumpAmount = 0;
+      updateDisplay();
+      updateCost();
+    }
+
+    function createChart() {
       const ctx = document.getElementById("trumpChart").getContext("2d");
       trumpChart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: labels,
+          labels: [],
           datasets: [{
-            label: "TrumpCoin árfolyam (USD)",
-            data: trumpPrices,
+            label: "TRUMP árfolyam (USD)",
+            data: [],
             borderColor: "rgb(75, 192, 192)",
             fill: false
           }]
         },
         options: {
-          scales: {
-            y: {
-              beginAtZero: false
-            }
-          }
+          scales: { y: { beginAtZero: false } }
         }
       });
-      setInterval(updateChart, 5000);
     }
 
-    async function buyCrypto() {
-      const amount = parseFloat(document.getElementById("trumpAmountInput").value);
-      if (currentTrumpPrice !== 0 && amount > 0 && balance >= currentTrumpPrice * amount) {
-        balance -= currentTrumpPrice * amount;
-        trumpAmount += amount;
-        updateBalance();
+    async function updateChart() {
+      await fetchCryptoPrice();
+      const now = new Date().toLocaleTimeString();
+      trumpPrices.push(currentTrumpPrice);
+      labels.push(now);
+      if (trumpPrices.length > 10) {
+        trumpPrices.shift();
+        labels.shift();
       }
-    }
-
-    async function sellCrypto() {
-      if (currentTrumpPrice !== 0 && trumpAmount > 0) {
-        balance += currentTrumpPrice * trumpAmount;
-        trumpAmount = 0;
-        updateBalance();
-      }
-    }
-
-    function updateBalance() {
-      document.getElementById("balance").innerText = `${balance.toFixed(2)} USD`;
-      document.getElementById("trumpPrice").innerText = `TRUMP: ${trumpAmount.toFixed(4)}`;
-    }
-
-    function updateCost() {
-      const amount = parseFloat(document.getElementById("trumpAmountInput").value);
-      if (currentTrumpPrice !== 0 && amount > 0) {
-        const cost = currentTrumpPrice * amount;
-        document.getElementById("totalCost").innerText = `Költség: ${cost.toFixed(2)} USD`;
-      } else {
-        document.getElementById("totalCost").innerText = "Költség: N/A";
-      }
-    }
-
-    function resetCrypto() {
-      balance = 10000;
-      trumpAmount = 0;
-      updateBalance();
+      trumpChart.data.labels = labels;
+      trumpChart.data.datasets[0].data = trumpPrices;
+      trumpChart.update();
     }
 
     window.onload = async () => {
-      updateBalance();
+      await fetchUserData();
       createChart();
+      updateChart();
+      setInterval(updateChart, 5000);
     };
   </script>
 

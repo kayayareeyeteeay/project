@@ -24,17 +24,17 @@
   <div class="container mt-4">
     <h2 class="text-center mb-4">Dogecoin Kereskedés</h2>
     <div class="row">
-      <!-- Bal oldal: vezérlés -->
       <div class="col-12 col-md-6 mb-4">
-        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">10,000 USD</span></p>
-        <p id="dogePrice"><strong>DOGE:</strong> N/A</p>
+        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">--</span></p>
+        <p><strong>DOGE mennyiség:</strong> <span id="dogeAmount">--</span></p>
+        <p><strong>Aktuális ár:</strong> <span id="dogePrice">--</span></p>
 
         <div class="mb-3">
-          <label for="dogeAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+          <label for="dogeAmountInput" class="form-label">Mennyit szeretnél vásárolni/eladni?</label>
           <input type="number" class="form-control" id="dogeAmountInput" min="0" step="any" placeholder="DOGE mennyiség" oninput="updateCost()">
         </div>
 
-        <p id="totalCost">Költség: N/A</p>
+        <p><strong>Költség:</strong> <span id="totalCost">--</span></p>
 
         <div class="d-grid gap-2">
           <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
@@ -43,7 +43,6 @@
         </div>
       </div>
 
-      <!-- Jobb oldal: grafikon -->
       <div class="col-12 col-md-6 d-flex justify-content-center align-items-center">
         <canvas id="dogeChart" class="chart-center" style="max-height: 300px;"></canvas>
       </div>
@@ -51,112 +50,145 @@
   </div>
 
   <script>
-    let balance = 10000;
+    let balance = 0;
     let dogeAmount = 0;
     let currentDogePrice = 0;
+    let currency = "USD";
+    const token = localStorage.getItem("token");
 
-    async function fetchCryptoPrice(symbol) {
-      try {
-        const response = await fetch(`/api/live/dogeusdt`);
-        const data = await response.json();
-        return parseFloat(data.price);
-      } catch (error) {
-        console.error("API hiba:", error);
-        return null;
-      }
+    async function fetchUserData() {
+      const res = await fetch("/api/userdata", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      balance = data.balance;
+      currency = data.currency;
+      dogeAmount = data.cryptoQuantity?.dogeusdt || 0;
+      updateDisplay();
     }
 
-    let dogeChart;
-    let dogePrices = [];
-    let labels = [];
+    function updateDisplay() {
+      document.getElementById("balance").innerText = `${balance.toFixed(2)} ${currency}`;
+      document.getElementById("dogeAmount").innerText = dogeAmount.toFixed(4);
+    }
 
-    async function updateChart() {
-      const price = await fetchCryptoPrice("dogeusdt");
-      if (price !== null) {
-        currentDogePrice = price;
-        dogePrices.push(price);
-        labels.push(new Date().toLocaleTimeString());
+    async function fetchCryptoPrice() {
+      const res = await fetch("/api/live/dogeusdt");
+      const data = await res.json();
+      currentDogePrice = parseFloat(data.price);
+      document.getElementById("dogePrice").innerText = `${currentDogePrice.toFixed(4)} ${currency}`;
+      updateCost();
+    }
 
-        if (dogePrices.length > 10) {
-          dogePrices.shift();
-          labels.shift();
+    function updateCost() {
+      const amount = parseFloat(document.getElementById("dogeAmountInput").value) || 0;
+      const cost = currentDogePrice * amount;
+      document.getElementById("totalCost").innerText = `${cost.toFixed(2)} ${currency}`;
+    }
+
+    async function buyCrypto() {
+      const amount = parseFloat(document.getElementById("dogeAmountInput").value);
+      const cost = currentDogePrice * amount;
+      if (amount > 0 && balance >= cost) {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            type: "Vétel",
+            amount,
+            crypto: "dogeusdt",
+            currency,
+            price: currentDogePrice
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          dogeAmount = data.crypto.dogeusdt || 0;
+          updateDisplay();
+          document.getElementById("dogeAmountInput").value = "";
+          updateCost();
         }
-
-        dogeChart.data.labels = labels;
-        dogeChart.data.datasets[0].data = dogePrices;
-        dogeChart.update();
-        updateCost();
       }
     }
 
-    async function createChart() {
+    async function sellCrypto() {
+      const amount = parseFloat(document.getElementById("dogeAmountInput").value);
+      if (amount > 0 && dogeAmount >= amount) {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            type: "Eladás",
+            amount,
+            crypto: "dogeusdt",
+            currency,
+            price: currentDogePrice
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          balance = data.balance;
+          dogeAmount = data.crypto.dogeusdt || 0;
+          updateDisplay();
+          document.getElementById("dogeAmountInput").value = "";
+          updateCost();
+        }
+      }
+    }
+
+    async function resetCrypto() {
+      balance = 10000;
+      dogeAmount = 0;
+      updateDisplay();
+      updateCost();
+    }
+
+    function createChart() {
       const ctx = document.getElementById("dogeChart").getContext("2d");
       dogeChart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: labels,
+          labels: [],
           datasets: [{
-            label: "Dogecoin árfolyam (USD)",
-            data: dogePrices,
+            label: "DOGE árfolyam (USD)",
+            data: [],
             borderColor: "rgb(75, 192, 192)",
             fill: false
           }]
         },
         options: {
-          scales: {
-            y: {
-              beginAtZero: false
-            }
-          }
+          scales: { y: { beginAtZero: false } }
         }
       });
-      setInterval(updateChart, 5000);
     }
 
-    async function buyCrypto() {
-      const amount = parseFloat(document.getElementById("dogeAmountInput").value);
-      if (currentDogePrice !== 0 && amount > 0 && balance >= currentDogePrice * amount) {
-        balance -= currentDogePrice * amount;
-        dogeAmount += amount;
-        updateBalance();
+    async function updateChart() {
+      await fetchCryptoPrice();
+      const now = new Date().toLocaleTimeString();
+      dogePrices.push(currentDogePrice);
+      labels.push(now);
+      if (dogePrices.length > 10) {
+        dogePrices.shift();
+        labels.shift();
       }
-    }
-
-    async function sellCrypto() {
-      if (currentDogePrice !== 0 && dogeAmount > 0) {
-        balance += currentDogePrice * dogeAmount;
-        dogeAmount = 0;
-        updateBalance();
-      }
-    }
-
-    function updateBalance() {
-      document.getElementById("balance").innerText = `${balance.toFixed(2)} USD`;
-      document.getElementById("dogePrice").innerText = `DOGE: ${dogeAmount.toFixed(4)}`;
-    }
-
-    function updateCost() {
-      const amount = parseFloat(document.getElementById("dogeAmountInput").value);
-      if (currentDogePrice !== 0 && amount > 0) {
-        const cost = currentDogePrice * amount;
-        document.getElementById("totalCost").innerText = `Költség: ${cost.toFixed(2)} USD`;
-      } else {
-        document.getElementById("totalCost").innerText = "Költség: N/A";
-      }
-    }
-
-    function resetCrypto() {
-      balance = 10000;
-      dogeAmount = 0;
-      updateBalance();
+      dogeChart.data.labels = labels;
+      dogeChart.data.datasets[0].data = dogePrices;
+      dogeChart.update();
     }
 
     window.onload = async () => {
-      updateBalance();
+      await fetchUserData();
       createChart();
+      updateChart();
+      setInterval(updateChart, 5000);
     };
   </script>
-
-  <script type="module" src="/js/userdata.js"></script>
 </body>
 </html>
