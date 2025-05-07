@@ -24,169 +24,157 @@
   <div class="container mt-4">
     <h2 class="text-center mb-4">Bitcoin Kereskedés</h2>
     <div class="row">
-      <div class="col-12 col-md-6 mb-4">
-        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">10,000 USD</span></p>
-        <p id="btcPrice"><strong>BTC:</strong> N/A</p>
+      <div class="col-md-6 mb-4">
+        <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">--</span></p>
+        <p><strong>BTC mennyiség:</strong> <span id="btcAmount">--</span></p>
+        <p><strong>Aktuális ár:</strong> <span id="btcPrice">--</span></p>
         <div class="mb-3">
-          <label for="btcAmountInput" class="form-label">Mennyit szeretnél vásárolni?</label>
+          <label for="btcAmountInput" class="form-label">Mennyit szeretnél vásárolni/eladni?</label>
           <input type="number" class="form-control" id="btcAmountInput" min="0" step="any" placeholder="BTC mennyiség" oninput="updateCost()">
         </div>
-        <p id="totalCost">Költség: N/A</p>
+        <p><strong>Költség:</strong> <span id="totalCost">--</span></p>
         <div class="d-grid gap-2">
           <button class="btn btn-primary" onclick="buyCrypto()">Vásárlás</button>
           <button class="btn btn-danger" onclick="sellCrypto()">Eladás</button>
           <button class="btn btn-secondary" onclick="resetCrypto()">Újraindítás</button>
         </div>
       </div>
-      <div class="col-12 col-md-6 d-flex justify-content-center align-items-center">
-        <canvas id="btcChart" class="chart-center" style="max-height: 300px;"></canvas>
-      </div>      
+      <div class="col-md-6 d-flex justify-content-center align-items-center">
+        <canvas id="btcChart" style="max-height: 300px;"></canvas>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="/js/userdata.js"></script>
-
   <script>
-    let balance = 10000;
+    let balance = 0;
     let btcAmount = 0;
     let currentBtcPrice = 0;
     let currency = "USD";
-  
     const token = localStorage.getItem("token");
-  
-    async function fetchGlobals() {
-      try {
-        const response = await fetch("/api/live/btcusdt", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        currency = data.currency || "USD";
-        balance = data.balance || 10000;
-        btcAmount = data.cryptoQuantity?.btcusdt || 0;
-        updateBalance();
-      } catch (error) {
-        console.error("Hiba a globális értékek lekérésekor:", error);
-      }
+
+    async function fetchUserData() {
+      const res = await fetch("/api/userdata", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      balance = data.balance;
+      currency = data.currency;
+      btcAmount = data.cryptoQuantity?.btcusdt || 0;
+      updateDisplay();
     }
-  
-    async function updateGlobalCryptoQuantity() {
-      try {
-        await fetch("/api/live/btcusdt", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            currency: currency,
-            balance: balance,
-            cryptoQuantity: { btcusdt: btcAmount }
-          })
-        });
-      } catch (error) {
-        console.error("Hiba a globális kriptó mentésénél:", error);
-      }
+
+    async function saveUserData() {
+      await fetch("/api/userdata", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          balance: balance,
+          currency: currency,
+          cryptoQuantity: { btcusdt: btcAmount },
+          stockQuantity: {}
+        })
+      });
     }
-  
-    async function fetchCryptoPrice(symbol) {
-      try {
-        const response = await fetch(`/api/live/btcusdt`);
-        const data = await response.json();
-        return parseFloat(data.price);
-      } catch (error) {
-        console.error("API hiba:", error);
-        return null;
-      }
+
+    async function fetchCryptoPrice() {
+      const res = await fetch("/api/live/btcusdt");
+      const data = await res.json();
+      currentBtcPrice = parseFloat(data.price);
+      document.getElementById("btcPrice").innerText = `${currentBtcPrice.toFixed(2)} ${currency}`;
     }
-  
-    let btcChart;
-    let btcPrices = [];
-    let labels = [];
-  
-    async function updateChart() {
-      const price = await fetchCryptoPrice("btcusdt");
-      if (price !== null) {
-        currentBtcPrice = price;
-        btcPrices.push(price);
-        labels.push(new Date().toLocaleTimeString());
-        if (btcPrices.length > 10) {
-          btcPrices.shift();
-          labels.shift();
-        }
-        btcChart.data.labels = labels;
-        btcChart.data.datasets[0].data = btcPrices;
-        btcChart.update();
+
+    function updateDisplay() {
+      document.getElementById("balance").innerText = `${balance.toFixed(2)} ${currency}`;
+      document.getElementById("btcAmount").innerText = btcAmount.toFixed(4);
+    }
+
+    function updateCost() {
+      const amount = parseFloat(document.getElementById("btcAmountInput").value) || 0;
+      const cost = currentBtcPrice * amount;
+      document.getElementById("totalCost").innerText = `${cost.toFixed(2)} ${currency}`;
+    }
+
+    async function buyCrypto() {
+      const amount = parseFloat(document.getElementById("btcAmountInput").value);
+      const cost = currentBtcPrice * amount;
+      if (amount > 0 && balance >= cost) {
+        balance -= cost;
+        btcAmount += amount;
+        await saveUserData();
+        updateDisplay();
+        document.getElementById("btcAmountInput").value = "";
         updateCost();
       }
     }
-  
-    async function createChart() {
+
+    async function sellCrypto() {
+      const amount = parseFloat(document.getElementById("btcAmountInput").value);
+      if (amount > 0 && btcAmount >= amount) {
+        const gain = currentBtcPrice * amount;
+        balance += gain;
+        btcAmount -= amount;
+        await saveUserData();
+        updateDisplay();
+        document.getElementById("btcAmountInput").value = "";
+        updateCost();
+      }
+    }
+
+    async function resetCrypto() {
+      balance = 10000;
+      btcAmount = 0;
+      await saveUserData();
+      updateDisplay();
+      updateCost();
+    }
+
+    // Chart
+    let btcChart;
+    let btcPrices = [];
+    let labels = [];
+
+    function createChart() {
       const ctx = document.getElementById("btcChart").getContext("2d");
       btcChart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: labels,
+          labels: [],
           datasets: [{
-            label: "Bitcoin árfolyam (" + currency + ")",
-            data: btcPrices,
+            label: "BTC árfolyam (USD)",
+            data: [],
             borderColor: "rgb(75, 192, 192)",
             fill: false
           }]
         },
-        options: { scales: { y: { beginAtZero: false } } }
+        options: {
+          scales: { y: { beginAtZero: false } }
+        }
       });
-      setInterval(updateChart, 5000);
     }
-  
-    async function buyCrypto() {
-      const amountToBuy = parseFloat(document.getElementById("btcAmountInput").value);
-      if (currentBtcPrice !== 0 && balance >= currentBtcPrice * amountToBuy && amountToBuy > 0) {
-        balance -= currentBtcPrice * amountToBuy;
-        btcAmount += amountToBuy;
-        updateBalance();
-        await updateGlobalCryptoQuantity();
+
+    async function updateChart() {
+      await fetchCryptoPrice();
+      const now = new Date().toLocaleTimeString();
+      btcPrices.push(currentBtcPrice);
+      labels.push(now);
+      if (btcPrices.length > 10) {
+        btcPrices.shift();
+        labels.shift();
       }
+      btcChart.data.labels = labels;
+      btcChart.data.datasets[0].data = btcPrices;
+      btcChart.update();
     }
-  
-    async function sellCrypto() {
-      if (currentBtcPrice !== 0 && btcAmount > 0) {
-        balance += currentBtcPrice * btcAmount;
-        btcAmount = 0;
-        updateBalance();
-        await updateGlobalCryptoQuantity();
-      }
-    }
-  
-    async function resetCrypto() {
-      balance = 10000;
-      btcAmount = 0;
-      updateBalance();
-      await updateGlobalCryptoQuantity();
-    }
-  
-    function updateBalance() {
-      document.getElementById("balance").innerText = `${balance.toFixed(2)} ${currency}`;
-      document.getElementById("btcPrice").innerText = `BTC: ${btcAmount.toFixed(4)}`;
-    }
-  
-    function updateCost() {
-      const amount = parseFloat(document.getElementById("btcAmountInput").value);
-      if (currentBtcPrice !== 0 && amount > 0) {
-        const cost = currentBtcPrice * amount;
-        document.getElementById("totalCost").innerText = `Költség: ${cost.toFixed(2)} ${currency}`;
-      } else {
-        document.getElementById("totalCost").innerText = "Költség: N/A";
-      }
-    }
-  
+
     window.onload = async () => {
-      await fetchGlobals();
       createChart();
+      await fetchUserData();
+      await updateChart();
+      setInterval(updateChart, 5000);
     };
   </script>
-  
-  <script src="/js/userdata.js"></script>
 </body>
 </html>
