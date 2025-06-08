@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ripple (XRP) - Fundelio</title>
+  <title>XRP - Fundelio</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <link id="theme-style" rel="stylesheet" href="/css/style-dark.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script defer src="/js/light-dark.js"></script>
+  <script src="/js/light-dark.js" defer></script>
 </head>
 <body>
   <div id="navbar-container"></div>
@@ -22,7 +22,7 @@
   </script>
 
   <div class="container mt-4">
-    <h2 class="text-center mb-4">Ripple (XRP) Kereskedés</h2>
+    <h2 class="text-center mb-4">XRP Kereskedés</h2>
     <div class="row">
       <div class="col-12 col-md-6 mb-4">
         <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">--</span></p>
@@ -150,6 +150,10 @@
       updateCost();
     }
 
+    let xrpChart;
+    let xrpPrices = [];
+    let labels = [];
+
     function createChart() {
       const ctx = document.getElementById("xrpChart").getContext("2d");
       xrpChart = new Chart(ctx, {
@@ -159,7 +163,7 @@
           datasets: [{
             label: "XRP árfolyam (USD)",
             data: [],
-            borderColor: "rgb(75, 192, 192)",
+            borderColor: "rgb(0, 123, 255)",
             fill: false
           }]
         },
@@ -190,7 +194,5 @@
       setInterval(updateChart, 5000);
     };
   </script>
-
-  <script type="module" src="/js/userdata.js"></script>
 </body>
 </html>

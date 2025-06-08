@@ -76,7 +76,7 @@
       const res = await fetch("/api/live/ethusdt");
       const data = await res.json();
       currentEthPrice = parseFloat(data.price);
-      document.getElementById("ethPrice").innerText = `${currentEthPrice.toFixed(2)} ${currency}`;
+      document.getElementById("ethPrice").innerText = `${currentEthPrice.toFixed(4)} ${currency}`;
       updateCost();
     }
 
@@ -150,6 +150,10 @@
       updateCost();
     }
 
+    let ethChart;
+    let ethPrices = [];
+    let labels = [];
+
     function createChart() {
       const ctx = document.getElementById("ethChart").getContext("2d");
       ethChart = new Chart(ctx, {
@@ -190,7 +194,5 @@
       setInterval(updateChart, 5000);
     };
   </script>
-
-  <script type="module" src="/js/userdata.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ethereum - Fundelio</title>
+  <title>Solana - Fundelio</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <link id="theme-style" rel="stylesheet" href="/css/style-dark.css" />
@@ -22,16 +22,16 @@
   </script>
 
   <div class="container mt-4">
-    <h2 class="text-center mb-4">Ethereum Kereskedés</h2>
+    <h2 class="text-center mb-4">Solana Kereskedés</h2>
     <div class="row">
       <div class="col-12 col-md-6 mb-4">
         <p><strong>Rendelkezésre álló egyenleg:</strong> <span id="balance">--</span></p>
-        <p><strong>ETH mennyiség:</strong> <span id="ethAmount">--</span></p>
-        <p><strong>Aktuális ár:</strong> <span id="ethPrice">--</span></p>
+        <p><strong>SOL mennyiség:</strong> <span id="solAmount">--</span></p>
+        <p><strong>Aktuális ár:</strong> <span id="solPrice">--</span></p>
 
         <div class="mb-3">
-          <label for="ethAmountInput" class="form-label">Mennyit szeretnél vásárolni/eladni?</label>
-          <input type="number" class="form-control" id="ethAmountInput" min="0" step="any" placeholder="ETH mennyiség" oninput="updateCost()">
+          <label for="solAmountInput" class="form-label">Mennyit szeretnél vásárolni/eladni?</label>
+          <input type="number" class="form-control" id="solAmountInput" min="0" step="any" placeholder="SOL mennyiség" oninput="updateCost()">
         </div>
 
         <p><strong>Költség:</strong> <span id="totalCost">--</span></p>
@@ -44,15 +44,15 @@
       </div>
 
       <div class="col-12 col-md-6 d-flex justify-content-center align-items-center">
-        <canvas id="ethChart" class="chart-center" style="max-height: 300px;"></canvas>
+        <canvas id="solChart" class="chart-center" style="max-height: 300px;"></canvas>
       </div>
     </div>
   </div>
 
   <script>
     let balance = 0;
-    let ethAmount = 0;
-    let currentEthPrice = 0;
+    let solAmount = 0;
+    let currentSolPrice = 0;
     let currency = "USD";
     const token = localStorage.getItem("token");
 
@@ -63,32 +63,32 @@
       const data = await res.json();
       balance = data.balance;
       currency = data.currency;
-      ethAmount = data.cryptoQuantity?.ethusdt || 0;
+      solAmount = data.cryptoQuantity?.solusdt || 0;
       updateDisplay();
     }
 
     function updateDisplay() {
       document.getElementById("balance").innerText = `${balance.toFixed(2)} ${currency}`;
-      document.getElementById("ethAmount").innerText = ethAmount.toFixed(4);
+      document.getElementById("solAmount").innerText = solAmount.toFixed(4);
     }
 
     async function fetchCryptoPrice() {
-      const res = await fetch("/api/live/ethusdt");
+      const res = await fetch("/api/live/solusdt");
       const data = await res.json();
-      currentEthPrice = parseFloat(data.price);
-      document.getElementById("ethPrice").innerText = `${currentEthPrice.toFixed(4)} ${currency}`;
+      currentSolPrice = parseFloat(data.price);
+      document.getElementById("solPrice").innerText = `${currentSolPrice.toFixed(4)} ${currency}`;
       updateCost();
     }
 
     function updateCost() {
-      const amount = parseFloat(document.getElementById("ethAmountInput").value) || 0;
-      const cost = currentEthPrice * amount;
+      const amount = parseFloat(document.getElementById("solAmountInput").value) || 0;
+      const cost = currentSolPrice * amount;
       document.getElementById("totalCost").innerText = `${cost.toFixed(2)} ${currency}`;
     }
 
     async function buyCrypto() {
-      const amount = parseFloat(document.getElementById("ethAmountInput").value);
-      const cost = currentEthPrice * amount;
+      const amount = parseFloat(document.getElementById("solAmountInput").value);
+      const cost = currentSolPrice * amount;
       if (amount > 0 && balance >= cost) {
         const res = await fetch("/api/transactions", {
           method: "POST",
@@ -99,25 +99,25 @@
           body: JSON.stringify({
             type: "Vétel",
             amount,
-            crypto: "ethusdt",
+            crypto: "solusdt",
             currency,
-            price: currentEthPrice
+            price: currentSolPrice
           })
         });
         const data = await res.json();
         if (data.success) {
           balance = data.balance;
-          ethAmount = data.crypto.ethusdt || 0;
+          solAmount = data.crypto.solusdt || 0;
           updateDisplay();
-          document.getElementById("ethAmountInput").value = "";
+          document.getElementById("solAmountInput").value = "";
           updateCost();
         }
       }
     }
 
     async function sellCrypto() {
-      const amount = parseFloat(document.getElementById("ethAmountInput").value);
-      if (amount > 0 && ethAmount >= amount) {
+      const amount = parseFloat(document.getElementById("solAmountInput").value);
+      if (amount > 0 && solAmount >= amount) {
         const res = await fetch("/api/transactions", {
           method: "POST",
           headers: {
@@ -127,17 +127,17 @@
           body: JSON.stringify({
             type: "Eladás",
             amount,
-            crypto: "ethusdt",
+            crypto: "solusdt",
             currency,
-            price: currentEthPrice
+            price: currentSolPrice
           })
         });
         const data = await res.json();
         if (data.success) {
           balance = data.balance;
-          ethAmount = data.crypto.ethusdt || 0;
+          solAmount = data.crypto.solusdt || 0;
           updateDisplay();
-          document.getElementById("ethAmountInput").value = "";
+          document.getElementById("solAmountInput").value = "";
           updateCost();
         }
       }
@@ -145,25 +145,25 @@
 
     async function resetCrypto() {
       balance = 10000;
-      ethAmount = 0;
+      solAmount = 0;
       updateDisplay();
       updateCost();
     }
 
-    let ethChart;
-    let ethPrices = [];
+    let solChart;
+    let solPrices = [];
     let labels = [];
 
     function createChart() {
-      const ctx = document.getElementById("ethChart").getContext("2d");
-      ethChart = new Chart(ctx, {
+      const ctx = document.getElementById("solChart").getContext("2d");
+      solChart = new Chart(ctx, {
         type: "line",
         data: {
           labels: [],
           datasets: [{
-            label: "ETH árfolyam (USD)",
+            label: "SOL árfolyam (USD)",
             data: [],
-            borderColor: "rgb(75, 192, 192)",
+            borderColor: "rgb(255, 99, 132)",
             fill: false
           }]
         },
@@ -176,15 +176,15 @@
     async function updateChart() {
       await fetchCryptoPrice();
       const now = new Date().toLocaleTimeString();
-      ethPrices.push(currentEthPrice);
+      solPrices.push(currentSolPrice);
       labels.push(now);
-      if (ethPrices.length > 10) {
-        ethPrices.shift();
+      if (solPrices.length > 10) {
+        solPrices.shift();
         labels.shift();
       }
-      ethChart.data.labels = labels;
-      ethChart.data.datasets[0].data = ethPrices;
-      ethChart.update();
+      solChart.data.labels = labels;
+      solChart.data.datasets[0].data = solPrices;
+      solChart.update();
     }
 
     window.onload = async () => {
